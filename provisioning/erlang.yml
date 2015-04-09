@@ -1,0 +1,16 @@
+- name: Erlang | Add apt repository
+  apt_repository: repo="deb http://packages.erlang-solutions.com/ubuntu trusty contrib"
+                  state=present
+
+- name: Erlang | Add vendor key
+  apt_key: url="http://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc"
+           state=present
+
+- name: Erlang | Install Erlang/OTP
+  apt: pkg={{item}}
+       state=latest
+       update_cache=yes
+  with_items:
+    - esl-erlang
+    - erlang-manpages
+    - elixir
