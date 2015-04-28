@@ -1,8 +1,0 @@
-- hosts: all
-  sudo: yes
-  tasks:
-    - name: Apt | update cache
-      apt: update_cache=yes cache_valid_time=3600
-    - include: erlang.yml version=17.4
-    - name: Git | install git
-      apt: pkg=git state=present
