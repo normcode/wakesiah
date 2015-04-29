@@ -3,6 +3,8 @@ VAGRANTFILE_API_VERSION = "2"
 $script = <<SCRIPT
 set -e
 
+hostname wakesiah-dev
+
 echo "Installing erlang vendor repo"
 apt-add-repository -y \
   "deb http://packages.erlang-solutions.com/ubuntu trusty contrib" > /dev/null
