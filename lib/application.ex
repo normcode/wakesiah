@@ -5,8 +5,7 @@ defmodule WakesiahApp do
     IO.puts "Starting Wakesiah Application"
     :random.seed(:os.timestamp)
     # TODO: should set up supervisor
-    # By default, register locally using a well known name
-    Application.get_env(:wakesiah, :registration, :wakesiah) |>
-      Wakesiah.start_link
+    name = Application.get_env(:wakesiah, :registration, :wakesiah)
+    Wakesiah.start_link(name: name)
   end
 end
