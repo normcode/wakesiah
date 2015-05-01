@@ -4,11 +4,13 @@ defmodule Wakesiah do
   # Client
 
   def start(opts \\ []) do
-    GenServer.start(__MODULE__, HashDict.new, opts)
+    state = %{members: HashDict.new}
+    GenServer.start(__MODULE__, state , opts)
   end
 
   def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, HashDict.new, opts)
+    state = %{members: HashDict.new}
+    GenServer.start_link(__MODULE__, state, opts)
   end
   
   def stop(pid) do
@@ -27,7 +29,8 @@ defmodule Wakesiah do
   end
 
   def handle_call(:members, _from, state) do
-    {:reply, [], state}
+    members = HashDict.keys state[:members]
+    {:reply, members, state}
   end
 
   def handle_info(:tick, state) do
