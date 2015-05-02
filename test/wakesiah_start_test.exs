@@ -3,8 +3,12 @@ defmodule WakesiahTest.StartTests do
 
   test "start_link with name option" do
     {:ok, pid} = Wakesiah.start_link nil, name: :test
-    assert Process.whereis(:test) == pid
-    assert {:links, [self]} == Process.info(pid, :links)
+    try do
+      assert Process.whereis(:test) == pid
+      assert {:links, [self]} == Process.info(pid, :links)
+    after
+      Wakesiah.stop pid
+    end
   end
 
   test "start_link without name option" do
@@ -14,8 +18,12 @@ defmodule WakesiahTest.StartTests do
 
   test "start with name option" do
     {:ok, pid} = Wakesiah.start nil, name: :test
-    assert Process.whereis(:test) == pid
-    assert {:links, []} == Process.info(pid, :links)
+    try do
+      assert Process.whereis(:test) == pid
+      assert {:links, []} == Process.info(pid, :links)
+    after
+      Wakesiah.stop pid
+    end
   end
 
   test "start without name option" do
