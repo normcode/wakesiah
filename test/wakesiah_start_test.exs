@@ -1,5 +1,5 @@
 defmodule WakesiahTest.StartTests do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   test "start_link with name option" do
     {:ok, pid} = Wakesiah.start_link nil, name: :test
