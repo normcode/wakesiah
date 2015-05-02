@@ -18,6 +18,12 @@ defmodule WakesiahTest do
     {:ok, event_manager} = GenEvent.start_link
     :ok = GenEvent.add_mon_handler event_manager, EventHandler, self
     {:ok, pid} = Wakesiah.start_link event_manager
+
+    on_exit fn ->
+      Wakesiah.stop pid
+      Wakesiah.stop event_manager
+    end
+
     {:ok, [pid: pid, event_manager: event_manager]}
   end
 
@@ -28,8 +34,6 @@ defmodule WakesiahTest do
   test "tick sends tick event", %{pid: pid} do
     send pid, :tick
     assert_receive {:event, :tick}, 1_000
-
-    Wakesiah.stop pid
   end
 
 end

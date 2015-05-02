@@ -10,7 +10,7 @@ defmodule Wakesiah do
   def start_link(event_manager, opts \\ []) do
     GenServer.start_link(__MODULE__, event_manager, opts)
   end
-  
+
   def stop(pid) do
     GenServer.cast(pid, :terminate)
   end
