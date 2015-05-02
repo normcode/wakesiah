@@ -3,14 +3,12 @@ defmodule Wakesiah do
 
   # Client
 
-  def start(opts \\ []) do
-    state = %{members: HashDict.new}
-    GenServer.start(__MODULE__, state , opts)
+  def start(event_manager, opts \\ []) do
+    GenServer.start(__MODULE__, event_manager, opts)
   end
 
-  def start_link(opts \\ []) do
-    state = %{members: HashDict.new}
-    GenServer.start_link(__MODULE__, state, opts)
+  def start_link(event_manager, opts \\ []) do
+    GenServer.start_link(__MODULE__, event_manager, opts)
   end
   
   def stop(pid) do
@@ -24,8 +22,9 @@ defmodule Wakesiah do
   # Server (callbacks)
 
   def init(args) do
+    state = %{members: HashDict.new, events: args}
     :erlang.send_after 1000, self, :tick
-    {:ok, args}
+    {:ok, state}
   end
 
   def handle_call(:members, _from, state) do
@@ -35,6 +34,7 @@ defmodule Wakesiah do
 
   def handle_info(:tick, state) do
     :erlang.send_after 1000, self, :tick
+    GenEvent.sync_notify state[:events], :tick
     {:noreply, state}
   end
 
