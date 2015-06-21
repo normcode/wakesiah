@@ -21,8 +21,8 @@ defmodule Wakesiah do
     GenServer.call(pid, :members)
   end
 
-  def connect(pid, connect_to) do
-    GenServer.cast(pid, {:connect, connect_to})
+  def join(pid, connect_to) do
+    GenServer.cast(pid, {:join, connect_to})
   end
 
   # Server (callbacks)
@@ -38,8 +38,17 @@ defmodule Wakesiah do
     {:reply, members, state}
   end
 
-  def handle_cast({:connect, connect_to}, state) do
+  def handle_call(:ping, {from_pid, _ref}, state) do
+    members = HashDict.put state[:members], from_pid, :ok
+    state = %{state | members: members}
+    {:reply, {:pong, self}, state}
+  end
+
+  def handle_cast({:join, connect_to}, state) do
     Logger.info "Connecting to #{inspect connect_to}"
+    {:pong, pid} = GenServer.call connect_to, :ping
+    members = HashDict.put state[:members], pid, :ok
+    state = %{state | members: members}
     {:noreply, state}
   end
 
