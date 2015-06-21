@@ -1,6 +1,8 @@
 defmodule Wakesiah do
   use GenServer
 
+  require Logger
+
   # Client
 
   def start(event_manager, opts \\ []) do
@@ -19,10 +21,21 @@ defmodule Wakesiah do
     GenServer.call(pid, :members)
   end
 
+  def connect(pid, connect_to) do
+    GenServer.cast(pid, {:connect, connect_to})
+  end
+
   # Server (callbacks)
 
-  def init(args) do
-    state = %{members: HashDict.new, events: args}
+  def init(event_manager_name)
+  when not is_nil(event_manager_name)
+  and is_atom(event_manager_name) do
+    event_manager = Process.whereis(event_manager_name)
+    init(event_manager)
+  end
+  
+  def init(event_manager) do
+    state = %{members: HashDict.new, events: event_manager}
     :erlang.send_after 1000, self, :tick
     {:ok, state}
   end

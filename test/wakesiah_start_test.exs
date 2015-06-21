@@ -13,6 +13,7 @@ defmodule WakesiahTest.StartTests do
 
   test "start_link without name option" do
     assert {:ok, pid} = Wakesiah.start_link nil
+    assert {:registered_name, []} == Process.info(pid, :registered_name)
     assert {:links, [self]} == Process.info(pid, :links)
   end
 
