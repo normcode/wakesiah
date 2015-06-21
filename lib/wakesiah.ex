@@ -5,12 +5,12 @@ defmodule Wakesiah do
 
   # Client
 
-  def start(event_manager, opts \\ []) do
-    GenServer.start(__MODULE__, event_manager, opts)
+  def start(opts \\ []) do
+    GenServer.start(__MODULE__, :ok, opts)
   end
 
-  def start_link(event_manager, opts \\ []) do
-    GenServer.start_link(__MODULE__, event_manager, opts)
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, :ok, opts)
   end
 
   def stop(pid) do
@@ -27,15 +27,8 @@ defmodule Wakesiah do
 
   # Server (callbacks)
 
-  def init(event_manager_name)
-  when not is_nil(event_manager_name)
-  and is_atom(event_manager_name) do
-    event_manager = Process.whereis(event_manager_name)
-    init(event_manager)
-  end
-  
-  def init(event_manager) do
-    state = %{members: HashDict.new, events: event_manager}
+  def init(:ok) do
+    state = %{members: HashDict.new}
     :erlang.send_after 1000, self, :tick
     {:ok, state}
   end
@@ -45,14 +38,19 @@ defmodule Wakesiah do
     {:reply, members, state}
   end
 
-  def handle_info(:tick, state) do
-    :erlang.send_after 1000, self, :tick
-    GenEvent.sync_notify state[:events], :tick
+  def handle_cast({:connect, connect_to}, state) do
+    Logger.info "Connecting to #{inspect connect_to}"
     {:noreply, state}
   end
 
   def handle_cast(:terminate, state) do
     {:stop, :shutdown, state}
+  end
+
+  def handle_info(:tick, state) do
+    :erlang.send_after 1000, self, :tick
+    Logger.debug "Firing tick event"
+    {:noreply, state}
   end
 
 end

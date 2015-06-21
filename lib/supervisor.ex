@@ -10,14 +10,12 @@ defmodule Wakesiah.Supervisor do
     Supervisor.start_link(__MODULE__, worker_name, opts)
   end
 
-  @manager_name Wakesiah.EventManager
-
   def init(worker_name, opts \\ []) do
     children = [
-      worker(GenEvent, [[name: @manager_name]]),
-      worker(Wakesiah, [@manager_name, [name: worker_name]]),
+      worker(Wakesiah, [[name: worker_name]]),
     ]
 
     supervise(children, strategy: :one_for_one)
   end
+
 end
