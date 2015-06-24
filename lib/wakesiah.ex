@@ -29,27 +29,26 @@ defmodule Wakesiah do
 
   def init(:ok) do
     state = %{members: HashDict.new}
-    :erlang.send_after 1000, self, :tick
+    :erlang.send_after(1000, self, :tick)
     {:ok, state}
   end
 
   def handle_call(:members, _from, state) do
-    members = HashDict.keys state[:members]
+    members = HashDict.keys(state.members)
     {:reply, members, state}
   end
 
   def handle_call(:ping, {from_pid, _ref}, state) do
-    members = HashDict.put state[:members], from_pid, :ok
-    state = %{state | members: members}
-    {:reply, {:pong, self}, state}
+    members = HashDict.put(state.members, from_pid, :ok)
+    {:reply, {:pong, self}, %{state | members: members}}
   end
 
-  def handle_cast({:join, connect_to}, state) do
+  def handle_call({:join, connect_to}, _from, state) do
     Logger.info "Connecting to #{inspect connect_to}"
-    {:pong, pid} = GenServer.call connect_to, :ping
-    members = HashDict.put state[:members], pid, :ok
+    {:pong, pid} = GenServer.call(connect_to, :ping)
+    members = HashDict.put(state.members, pid, :ok)
     state = %{state | members: members}
-    {:noreply, state}
+    {:reply, :ok, state}
   end
 
   def handle_cast(:terminate, state) do
@@ -57,8 +56,8 @@ defmodule Wakesiah do
   end
 
   def handle_info(:tick, state) do
-    :erlang.send_after 1000, self, :tick
-    Logger.debug "Firing tick event"
+    :erlang.send_after(1000, self, :tick)
+    Logger.debug("Firing tick event")
     {:noreply, state}
   end
 
