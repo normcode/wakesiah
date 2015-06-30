@@ -9,10 +9,8 @@ defmodule Wakesiah.Mixfile do
   end
 
   def application do
-    []
-    # [mod: {WakesiahApp, []},
-    #  env: [registration: :wakesiah],
-    #  applications: [:logger]]
+    [mod: {WakesiahApp, []},
+     applications: [:logger]]
   end
 
   defp deps do
