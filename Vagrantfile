@@ -19,7 +19,7 @@ echo "Installing build tools"
 apt-get -qq install build-essential curl git-core pkg-config zip 
 
 echo "Installing erlang"
-apt-get -qq install esl-erlang erlang-manpages elixir
+apt-get -qq install elixir
 
 echo "Provisioning completed: ok"
 SCRIPT
