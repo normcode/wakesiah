@@ -55,12 +55,12 @@ defmodule Wakesiah do
 
   def handle_call({:connect, name}, from, state) when is_atom(name) do
     task_sup = {:wakesiah_task_sup, name}
-    do_connect_task(task_sup, from, state)
+    do_connect_task(task_sup, self(), from, state)
   end
 
-  def handle_call({:connect, pid}, from, state) do
+  def handle_call({:connect, pid}, from, state) when is_pid(pid) do
     task_sup = :wakesiah_task_sup
-    do_connect_task(task_sup, from, state)
+    do_connect_task(task_sup, pid, from, state)
   end
 
   def handle_call({:join, connect_to}, _from, state) do
@@ -94,27 +94,18 @@ defmodule Wakesiah do
     end
   end
 
-  def task(:connect, {name, peer}, from) when is_atom(name) do
-    pid = Process.whereis name
-    ping_other(pid, peer, from)
+  defp do_connect_task(task_sup, pid, from, state) do
+    connect_task = Task.Supervisor.async(task_sup, __MODULE__, :ping_other,
+                                         [:wakesiah, pid, from])
+    state = %{state | tasks: [connect_task | state.tasks]}
+    {:noreply, state}
   end
 
-  def task(:connect, pid, from) do
-    ping_other(pid, pid, from)
-  end
-
-  defp ping_other(pid, peer, from) do
+  def ping_other(pid, peer, from) do
     case GenServer.call(pid, {:ping, peer}) do
       {:pong, pid} ->
         {:ok, pid, from}
     end
-  end
-
-  defp do_connect_task(task_sup, from, state) do
-    args = [:connect, {:wakesiah, self()}, from]
-    connect_task = Task.Supervisor.async(task_sup, __MODULE__, :task, args)
-    state = %{state | tasks: [connect_task | state.tasks]}
-    {:noreply, state}
   end
 
 end
