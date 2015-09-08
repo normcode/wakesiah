@@ -38,7 +38,7 @@ defmodule Wakesiah do
   # Server (callbacks)
 
   def init(:ok) do
-    state = %{members: HashDict.new, tasks: []}
+    state = %{members: HashDict.new, tasks: HashSet.new}
     :erlang.send_after(1000, self, :tick)
     {:ok, state}
   end
@@ -56,14 +56,14 @@ defmodule Wakesiah do
   def handle_call({:connect, name}, from, state) when is_atom(name) do
     task_sup = {:wakesiah_task_sup, name}
     connect_task = Wakesiah.Task.Connect.start_task(task_sup, self(), from)
-    state = %{state | tasks: [connect_task | state.tasks]}
+    state = %{state | tasks: [connect_task] |> Enum.into(state.tasks)}
     {:noreply, state}
   end
 
   def handle_call({:connect, pid}, from, state) when is_pid(pid) do
     task_sup = :wakesiah_task_sup
     connect_task = Wakesiah.Task.Connect.start_task(task_sup, pid, from)
-    state = %{state | tasks: [connect_task | state.tasks]}
+    state = %{state | tasks: [connect_task] |> Enum.into(state.tasks)}
     {:noreply, state}
   end
 
@@ -88,7 +88,7 @@ defmodule Wakesiah do
     case Task.find(state.tasks, msg) do
       {{:ok, pid, from}, task} ->
         members = HashDict.put(state.members, node(pid), :ok)
-        tasks = List.delete(state.tasks, task)
+        tasks = Set.delete(state.tasks, task)
         response = {:ok, :connected}
         GenServer.reply(from, response)
         {:noreply, %{state | members: members, tasks: tasks}}
