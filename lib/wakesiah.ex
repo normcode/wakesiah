@@ -90,8 +90,8 @@ defmodule Wakesiah do
         response = {:ok, :connected}
         GenServer.reply(from, response)
         {:noreply, %{state | members: members, tasks: tasks}}
-      _ ->
-        Logger.debug("Unexpected message: #{inspect msg}")
+      {{:error, {reason, _ }}, %Task{}} ->
+        Logger.info("Peer down: #{inspect reason}")
         {:noreply, state}
     end
   end
