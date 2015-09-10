@@ -1,10 +1,8 @@
 defmodule SupervisorTest do
   use ExUnit.Case, async: true
 
-  @test_worker_name __MODULE__
-
-  setup do
-    {:ok, pid} = Wakesiah.Supervisor.start_link(worker_name: @test_worker_name)
+  setup context do
+    {:ok, pid} = Wakesiah.Supervisor.start_link(worker_name: context.test)
 
     on_exit fn ->
       Process.exit(pid, :normal)
@@ -13,13 +11,13 @@ defmodule SupervisorTest do
     {:ok, [pid: pid]}
   end
 
-  test "supervisor starts worker", %{pid: sup_pid} do
-    worker_pid = Process.whereis(@test_worker_name)
+  test "supervisor starts worker", context = %{pid: sup_pid} do
+    worker_pid = Process.whereis(context.test)
     children = Supervisor.which_children(sup_pid)
 
     assert children == [{Wakesiah, worker_pid, :worker, [Wakesiah]}]
-    assert ({:registered_name, @test_worker_name} ==
-      Process.info(worker_pid, :registered_name))
+    assert {:registered_name, context.test} ==
+      Process.info(worker_pid, :registered_name)
   end
 
 end

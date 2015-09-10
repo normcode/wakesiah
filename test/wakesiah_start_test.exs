@@ -1,10 +1,10 @@
 defmodule WakesiahTest.StartTests do
   use ExUnit.Case, async: false
 
-  test "start_link with name option" do
-    {:ok, pid} = Wakesiah.start_link name: :test
+  test "start_link with name option", context do
+    {:ok, pid} = Wakesiah.start_link name: context.test
     try do
-      assert Process.whereis(:test) == pid
+      assert Process.whereis(context.test) == pid
       assert {:links, [self]} == Process.info(pid, :links)
     after
       Wakesiah.stop pid
@@ -17,10 +17,10 @@ defmodule WakesiahTest.StartTests do
     assert {:links, [self]} == Process.info(pid, :links)
   end
 
-  test "start with name option" do
-    {:ok, pid} = Wakesiah.start name: :test
+  test "start with name option", context do
+    {:ok, pid} = Wakesiah.start(name: context.test)
     try do
-      assert Process.whereis(:test) == pid
+      assert Process.whereis(context.test) == pid
       assert {:links, []} == Process.info(pid, :links)
     after
       Wakesiah.stop pid

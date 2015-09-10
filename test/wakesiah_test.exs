@@ -1,8 +1,8 @@
 defmodule WakesiahTest do
   use ExUnit.Case, async: true
 
-  setup do
-    {:ok, pid} = Wakesiah.start
+  setup context do
+    {:ok, pid} = Wakesiah.start_link(name: context.test)
 
     on_exit fn ->
       Wakesiah.stop pid
