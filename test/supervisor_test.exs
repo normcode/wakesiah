@@ -18,7 +18,8 @@ defmodule SupervisorTest do
     children = Supervisor.which_children(sup_pid)
 
     assert children == [{Wakesiah, worker_pid, :worker, [Wakesiah]}]
-    assert {:registered_name, @test_worker_name} == Process.info(worker_pid, :registered_name)
+    assert ({:registered_name, @test_worker_name} ==
+      Process.info(worker_pid, :registered_name))
   end
 
 end
