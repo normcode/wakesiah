@@ -4,13 +4,14 @@ wakesiah: development notest
 Setting up nodes:
 
     $ iex --sname node1 -S mix
-    iex(node1@wakesiah-dev)> {:ok, pid} = Wakesiah.Supervisor.start_link
+    iex(node1@wakesiah-dev)> {:ok, pid} = Wakesiah.start_link Wakesiah
     {:ok, #PID<0.107.0>}
     iex(node1@wakesiah-dev)> Wakesiah.members pid
     []
 
-The above starts a Wakesiah server named `Wakesiah`, the default. But
-the application started by mix also starts one automatically:
+The above starts a new Wakesiah server named `Wakesiah`. Mix starts
+the OTP application which registers a process with the name
+`:wakesiah`.
 
     iex(node1@wakesiah-dev)> Process.whereis :wakesiah |> Process.info
     [registered_name: :wakesiah, current_function: {:gen_server, :loop, 6},
@@ -26,8 +27,8 @@ the application started by mix also starts one automatically:
 To connect to a remote wakesiah process:
 
     $ iex --sname node2 -S mix
-    iex(node2@wakesiah-dev)> Wakesiah.join :wakesiah, [{Wakesiah, :"node1@wakesiah-dev"}]
-    :ok
+    iex(node2@wakesiah-dev)> Wakesiah.connect :"node1@wakesiah-dev"}
+    {:ok, :connected}
     iex(node2@wakesiah-dev)> Wakesiah.members :wakesiah
-    [#PID<1234.140.0>]
+    [:"node2@wakesiah-dev"]
     

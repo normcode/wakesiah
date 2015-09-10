@@ -17,6 +17,11 @@ You can run the unit tests with:
 
     $ mix test
 
+And to run distributed tests:
+
+    $ iex --sname bar -S mix
+    $ elixir --sname foo -S mix test
+
 Or you can start a shell and explore:
 
     $ iex --sname shortname -S mix
