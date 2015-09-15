@@ -32,3 +32,10 @@ To connect to a remote wakesiah process:
     iex(node2@wakesiah-dev)> Wakesiah.members :wakesiah
     [:"node2@wakesiah-dev"]
     
+To run distributed tests, start background node named `bar` and run
+the tests in a node named `foo`:
+
+    $ iex --sname bar -S mix
+    $ elixir --sname foo -S mix test
+
+This doesn't restart or reset the state for the `bar@nodename` node.
