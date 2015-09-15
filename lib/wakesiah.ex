@@ -49,12 +49,12 @@ defmodule Wakesiah do
   end
 
   def handle_call({:ping, peer}, _from, state) do
-    members = HashDict.put(state.members, node(peer), :ok)
+    members = HashDict.put(state.members, peer, :ok)
     {:reply, {:pong, self}, %{state | members: members}}
   end
 
-  def handle_call({:connect, name}, from, state) when is_atom(name) do
-    connect_task = Wakesiah.Task.Connect.start_task(name, self(), from)
+  def handle_call({:connect, node_name}, from, state) when is_atom(node_name) do
+    connect_task = Wakesiah.Task.Connect.start_task(node_name, self(), from)
     state = %{state | tasks: [connect_task] |> Enum.into(state.tasks)}
     {:noreply, state}
   end

@@ -28,6 +28,14 @@ defmodule WakesiahTest do
     assert Wakesiah.members({:wakesiah, remote_node}) == [node()]
   end
 
+  test "connection timeout", %{pid: pid} do
+    stub = spawn_link(fn ->
+      :timer.sleep(10000)
+    end)
+    assert {:error, :timeout} = Wakesiah.connect(pid, stub)
+    assert Wakesiah.members(pid) == []
+  end
+
   def remote_node?(n), do: n != node()
 
 end

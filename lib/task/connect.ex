@@ -7,7 +7,7 @@ defmodule Wakesiah.Task.Connect do
 
   def connect(name, peer, from) do
     try do
-      {:pong, pid} = GenServer.call({:wakesiah, name}, {:ping, peer}, 1000)
+      {:pong, pid} = GenServer.call(peer, {:ping, name}, 1000)
       {:ok, pid, from}
     catch
       :exit, reason -> {:error, reason}
