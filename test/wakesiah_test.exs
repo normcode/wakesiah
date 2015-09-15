@@ -1,4 +1,5 @@
 defmodule WakesiahTest do
+  require Logger
   use ExUnit.Case, async: true
 
   setup context do
@@ -32,6 +33,7 @@ defmodule WakesiahTest do
     stub = spawn_link(fn ->
       :timer.sleep(10000)
     end)
+    Logger.debug("Testing connection timeout: #{inspect stub}")
     assert {:error, :timeout} = Wakesiah.connect(pid, stub)
     assert Wakesiah.members(pid) == []
   end

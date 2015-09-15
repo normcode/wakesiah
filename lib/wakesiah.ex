@@ -25,6 +25,7 @@ defmodule Wakesiah do
   def connect(connect_to), do: connect(:wakesiah, connect_to)
   def connect(pid, connect_to) do
     try do
+      Logger.debug("Connecting from node: #{node pid} to: #{inspect pid}")
       GenServer.call(pid, {:connect, connect_to}, 1000)
     catch
       :exit, {:timeout, _} -> {:error, :timeout}
