@@ -54,15 +54,15 @@ defmodule Wakesiah do
   end
 
   def handle_call({:connect, node_name}, from, state) when is_atom(node_name) do
-    connect_task = Wakesiah.Task.Connect.start_task(node_name, self(), from)
     Logger.info("Connecting from: #{inspect self()} to: #{inspect node_name}")
+    connect_task = Wakesiah.Task.Connect.start_task(self(), {:wakesiah, node_name}, from)
     state = %{state | tasks: [connect_task] |> Enum.into(state.tasks)}
     {:noreply, state}
   end
 
   def handle_call({:connect, pid}, from, state) when is_pid(pid) do
-    connect_task = Wakesiah.Task.Connect.start_task(node(), pid, from)
     Logger.info("Connecting from: #{inspect self()} to: #{inspect pid}")
+    connect_task = Wakesiah.Task.Connect.start_task(self(), pid, from)
     state = %{state | tasks: [connect_task] |> Enum.into(state.tasks)}
     {:noreply, state}
   end
@@ -87,7 +87,7 @@ defmodule Wakesiah do
   def handle_info(msg = {ref, _}, state) when is_reference(ref) do
     case Task.find(state.tasks, msg) do
       {{:ok, pid, from}, task} ->
-        members = HashDict.put(state.members, node(pid), :ok)
+        members = HashDict.put(state.members, pid, :ok)
         tasks = Set.delete(state.tasks, task)
         response = {:ok, :connected}
         GenServer.reply(from, response)
