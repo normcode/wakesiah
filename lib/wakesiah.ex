@@ -25,7 +25,6 @@ defmodule Wakesiah do
   def connect(connect_to), do: connect(:wakesiah, connect_to)
   def connect(pid, connect_to) do
     try do
-      Logger.debug("Connecting from node: #{node pid} to: #{inspect pid}")
       GenServer.call(pid, {:connect, connect_to}, 1000)
     catch
       :exit, {:timeout, _} -> {:error, :timeout}
@@ -56,12 +55,14 @@ defmodule Wakesiah do
 
   def handle_call({:connect, node_name}, from, state) when is_atom(node_name) do
     connect_task = Wakesiah.Task.Connect.start_task(node_name, self(), from)
+    Logger.info("Connecting from: #{inspect self()} to: #{inspect node_name}")
     state = %{state | tasks: [connect_task] |> Enum.into(state.tasks)}
     {:noreply, state}
   end
 
   def handle_call({:connect, pid}, from, state) when is_pid(pid) do
     connect_task = Wakesiah.Task.Connect.start_task(node(), pid, from)
+    Logger.info("Connecting from: #{inspect self()} to: #{inspect pid}")
     state = %{state | tasks: [connect_task] |> Enum.into(state.tasks)}
     {:noreply, state}
   end

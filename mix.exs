@@ -17,7 +17,7 @@ defmodule Wakesiah.Mixfile do
 
   defp deps do
     [
-      {:logger_file_backend, "~> 0.0.4", only: :test},
+      {:logger_file_backend, "~> 0.0.4", only: [:dev, :test]},
     ]
   end
 end
