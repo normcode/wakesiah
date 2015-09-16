@@ -12,11 +12,19 @@ defmodule Wakesiah.Mixfile do
 
   def application do
     [mod: {WakesiahApp, []},
-     applications: [:logger]]
+     applications: [:logger] ++ env_apps]
   end
 
+  defp env_apps do
+    case Mix.env do
+      :dev -> [:dbg]
+      _ -> []
+    end
+  end
+  
   defp deps do
     [
+      {:dbg, github: "fishcakez/dbg", only: [:dev]},
       {:logger_file_backend, "~> 0.0.4", only: [:dev, :test]},
     ]
   end
