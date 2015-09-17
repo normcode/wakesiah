@@ -18,17 +18,17 @@ defmodule WakesiahTest do
 
   test "connecting to a process", %{pid: pid} do
     assert {:ok, _} = Wakesiah.connect(pid, pid)
-    assert Wakesiah.members(pid) == [pid]
+    assert Wakesiah.members(pid) == [%Wakesiah.Member{pid: pid, status: :ok}]
   end
 
   @tag :distributed
   test "connecting to a remote process", %{pid: pid} do
     remote_node = Application.get_env(:wakesiah, :test_remote_name)
-    Logger.debug("Testing remote connection node: #{inspect remote_node}")
     assert {:ok, _} = Wakesiah.connect(pid, remote_node)
-    Logger.debug("#{inspect Wakesiah.members(pid)}")
     assert Wakesiah.members(pid) |> Enum.all?(&remote_node?/1)
-    assert Wakesiah.members({:wakesiah, remote_node}) == [pid]
+    assert Wakesiah.members({:wakesiah, remote_node}) == [
+      %Wakesiah.Member{pid: pid, status: :ok}
+    ]
   end
 
   test "connection timeout", %{pid: pid} do

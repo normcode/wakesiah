@@ -1,7 +1,7 @@
 defmodule Wakesiah do
 
   defmodule Member do
-    defstruct pid: nil, monitor_ref: nil, status: nil
+    defstruct pid: nil, status: nil
   end
 
   use GenServer
@@ -44,13 +44,12 @@ defmodule Wakesiah do
   end
 
   def handle_call(:members, _from, state) do
-    members = HashDict.keys(state.members)
+    members = Dict.values(state.members)
     {:reply, members, state}
   end
 
   def handle_call({:ping, peer}, _from, state) do
-    Process.monitor(peer)
-    members = HashDict.put(state.members, peer, :ok)
+    members = add_new_member(state.members, peer)
     {:reply, {:pong, self}, %{state | members: members}}
   end
 
@@ -81,8 +80,7 @@ defmodule Wakesiah do
   def handle_info(msg = {ref, _}, state) when is_reference(ref) do
     case Task.find(state.tasks, msg) do
       {{:ok, pid, from}, task} ->
-        Process.monitor(pid)
-        members = HashDict.put(state.members, pid, :ok)
+        members = add_new_member(state.members, pid)
         tasks = Set.delete(state.tasks, task)
         response = {:ok, :connected}
         GenServer.reply(from, response)
@@ -93,10 +91,21 @@ defmodule Wakesiah do
     end
   end
 
-  def handle_info({:DOWN, _monitor_ref, :process, pid, reason}, state) do
+  def handle_info({:DOWN, monitor_ref, :process, pid, reason}, state) do
     Logger.info("Process down: #{inspect pid} reason: #{inspect reason} #{inspect state.members}")
-    members = HashDict.delete(state.members, pid)
+    members = Dict.delete(state.members, monitor_ref)
+    Process.demonitor(monitor_ref)
     {:noreply, %{state | members: members}}
+  end
+
+  def add_new_member(members, pid) do
+    case Enum.all?(members, fn {_, v} -> v !== %Member{pid: pid, status: :ok} end) do
+      true ->
+        member = %Member{pid: pid, status: :ok}
+        Dict.put(members, Process.monitor(pid), member)
+      false ->
+        members
+    end
   end
 
 end
