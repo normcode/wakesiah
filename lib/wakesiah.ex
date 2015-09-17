@@ -49,6 +49,7 @@ defmodule Wakesiah do
   end
 
   def handle_call({:ping, peer}, _from, state) do
+    Process.monitor(peer)
     members = HashDict.put(state.members, peer, :ok)
     {:reply, {:pong, self}, %{state | members: members}}
   end
@@ -87,6 +88,7 @@ defmodule Wakesiah do
   def handle_info(msg = {ref, _}, state) when is_reference(ref) do
     case Task.find(state.tasks, msg) do
       {{:ok, pid, from}, task} ->
+        Process.monitor(pid)
         members = HashDict.put(state.members, pid, :ok)
         tasks = Set.delete(state.tasks, task)
         response = {:ok, :connected}
@@ -96,6 +98,12 @@ defmodule Wakesiah do
         Logger.info("Peer down: #{inspect reason}")
         {:noreply, state}
     end
+  end
+
+  def handle_info({:DOWN, _monitor_ref, :process, pid, reason}, state) do
+    Logger.info("Process down: #{inspect pid} reason: #{inspect reason} #{inspect state.members}")
+    members = HashDict.delete(state.members, pid)
+    {:noreply, %{state | members: members}}
   end
 
 end

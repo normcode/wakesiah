@@ -35,7 +35,9 @@ To connect to a remote wakesiah process:
 To run distributed tests, start background node named `bar` and run
 the tests in a node named `foo`:
 
-    $ iex --sname bar -S mix
+    $ elixir --sname bar -S mix run --no-halt
     $ elixir --sname foo -S mix test
 
-This doesn't restart or reset the state for the `bar@nodename` node.
+You can also use a remote shell to connect to the background node:
+
+    $ iex --sname baz --remsh bar@wakesiah-dev
