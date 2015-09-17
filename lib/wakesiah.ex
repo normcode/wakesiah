@@ -1,6 +1,10 @@
 defmodule Wakesiah do
-  use GenServer
 
+  defmodule Member do
+    defstruct pid: nil, monitor_ref: nil, status: nil
+  end
+
+  use GenServer
   require Logger
 
   # Client
@@ -29,10 +33,6 @@ defmodule Wakesiah do
     catch
       :exit, {:timeout, _} -> {:error, :timeout}
     end
-  end
-
-  def join(pid, connect_to) when is_pid(connect_to) do
-    GenServer.call(pid, {:join, connect_to})
   end
 
   # Server (callbacks)
@@ -66,13 +66,6 @@ defmodule Wakesiah do
     connect_task = Wakesiah.Task.Connect.start_task(self(), pid, from)
     state = %{state | tasks: [connect_task] |> Enum.into(state.tasks)}
     {:noreply, state}
-  end
-
-  def handle_call({:join, connect_to}, _from, state) do
-    {:pong, pid} = GenServer.call(connect_to, :ping)
-    members = HashDict.put(state.members, pid, :ok)
-    state = %{state | members: members}
-    {:reply, :ok, state}
   end
 
   def handle_cast(:terminate, state) do
