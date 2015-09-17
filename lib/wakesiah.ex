@@ -48,11 +48,6 @@ defmodule Wakesiah do
     {:reply, members, state}
   end
 
-  def handle_call({:ping, peer}, _from, state) do
-    members = add_new_member(state.members, peer)
-    {:reply, {:pong, self}, %{state | members: members}}
-  end
-
   def handle_call({:connect, node_name}, from, state) when is_atom(node_name) do
     Logger.info("Connecting from: #{inspect self()} to: #{inspect node_name}")
     connect_task = Wakesiah.Task.Connect.start_task(self(), {:wakesiah, node_name}, from)
@@ -67,8 +62,10 @@ defmodule Wakesiah do
     {:noreply, state}
   end
 
-  def handle_cast(:terminate, state) do
-    {:stop, :shutdown, state}
+  def handle_call({:ping, peer}, _from, state) do
+    Logger.info("Adding peer self: #{inspect self()} peer: #{inspect peer}")
+    members = add_new_member(state.members, peer)
+    {:reply, {:pong, self}, %{state | members: members}}
   end
 
   def handle_info(:tick, state) do
@@ -98,7 +95,11 @@ defmodule Wakesiah do
     {:noreply, %{state | members: members}}
   end
 
-  def add_new_member(members, pid) do
+  def handle_cast(:terminate, state) do
+    {:stop, :shutdown, state}
+  end
+
+  defp add_new_member(members, pid) do
     case Enum.all?(members, fn {_, v} -> v !== %Member{pid: pid, status: :ok} end) do
       true ->
         member = %Member{pid: pid, status: :ok}
