@@ -6,3 +6,4 @@ erl_crash.dump
 /.vagrant/
 logs/
 config/test/state
+rel/
