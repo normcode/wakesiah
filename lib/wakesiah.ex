@@ -17,6 +17,7 @@ defmodule Wakesiah do
     GenServer.start_link(__MODULE__, :ok, opts)
   end
 
+  def stop() do: stop(:wakesiah)
   def stop(pid) do
     GenServer.cast(pid, :terminate)
   end
@@ -112,6 +113,5 @@ defmodule Wakesiah do
         Dict.put(members, pid, member)
     end
   end
-
 
 end
