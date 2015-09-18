@@ -63,7 +63,6 @@ defmodule Wakesiah do
   end
 
   def handle_call({:ping, peer}, _from, state) do
-    Logger.info("Adding peer self: #{inspect self()} peer: #{inspect peer}")
     members = add_new_member(state.members, peer)
     {:reply, {:pong, self}, %{state | members: members}}
   end
@@ -103,8 +102,11 @@ defmodule Wakesiah do
 
   defp add_new_member(members, pid) do
     case Dict.fetch(members, pid) do
-      {:ok, _} -> members
+      {:ok, _} ->
+        Logger.info("Member already present self: #{inspect self()} peer: #{inspect pid}")
+        members
       :error ->
+        Logger.info("Adding peer self: #{inspect self()} peer: #{inspect pid}")
         ref = Process.monitor(pid)
         member = %Member{pid: pid, status: :ok, monitor_ref: ref}
         Dict.put(members, pid, member)
