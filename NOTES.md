@@ -41,3 +41,15 @@ the tests in a node named `foo`:
 You can also use a remote shell to connect to the background node:
 
     $ iex --sname baz --remsh bar@wakesiah-dev
+
+
+To use release to test:
+
+    $ RELEASE_CONFIG_DIR=$PWD/config/test \
+      RELEASE_MUTABLE_DIR=$PWD/config/test/state \
+      ./rel/wakesiah/bin/wakesiah start
+    $ elixir --name foo@127.0.0.1 foo -S mix test
+    $ RELEASE_CONFIG_DIR=$PWD/config/test \
+      RELEASE_MUTABLE_DIR=$PWD/config/test/state \
+      ./rel/wakesiah/bin/wakesiah start
+      
