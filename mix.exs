@@ -26,6 +26,7 @@ defmodule Wakesiah.Mixfile do
     [
       {:dbg, github: "fishcakez/dbg", only: [:dev]},
       {:logger_file_backend, "~> 0.0.4", only: [:dev, :test]},
+      {:exrm, "~> 0.19.5"},
     ]
   end
 end

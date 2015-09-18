@@ -1,9 +1,5 @@
 use Mix.Config
 
-config :logger, backends: [:console, {LoggerFileBackend, :info_log}]
+config :logger, backends: [:console]
+config :logger, level: :debug
 
-config :logger, :info_log, [
-  path: "logs/#{Mix.env}.log",
-  level: :info,
-  format: "\n$date $time [$level] $metadata$message",
-]
