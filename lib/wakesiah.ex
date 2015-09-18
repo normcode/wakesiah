@@ -1,7 +1,7 @@
 defmodule Wakesiah do
 
   defmodule Member do
-    defstruct pid: nil, status: nil
+    defstruct pid: nil, status: nil, monitor_ref: nil
   end
 
   use GenServer
@@ -90,9 +90,11 @@ defmodule Wakesiah do
 
   def handle_info({:DOWN, monitor_ref, :process, pid, reason}, state) do
     Logger.info("Process down: #{inspect pid} reason: #{inspect reason} #{inspect state.members}")
-    members = Dict.delete(state.members, monitor_ref)
-    Process.demonitor(monitor_ref)
-    {:noreply, %{state | members: members}}
+    case Dict.pop(state.members, pid) do
+      {%{pid: ^pid, monitor_ref: ^monitor_ref}, members} ->
+        Process.demonitor(monitor_ref)
+        {:noreply, %{state | members: members}}
+    end
   end
 
   def handle_cast(:terminate, state) do
@@ -100,13 +102,14 @@ defmodule Wakesiah do
   end
 
   defp add_new_member(members, pid) do
-    case Enum.all?(members, fn {_, v} -> v !== %Member{pid: pid, status: :ok} end) do
-      true ->
-        member = %Member{pid: pid, status: :ok}
-        Dict.put(members, Process.monitor(pid), member)
-      false ->
-        members
+    case Dict.fetch(members, pid) do
+      {:ok, _} -> members
+      :error ->
+        ref = Process.monitor(pid)
+        member = %Member{pid: pid, status: :ok, monitor_ref: ref}
+        Dict.put(members, pid, member)
     end
   end
+
 
 end

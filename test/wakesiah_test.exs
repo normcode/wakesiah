@@ -18,7 +18,8 @@ defmodule WakesiahTest do
 
   test "connecting to a process", %{pid: pid} do
     assert {:ok, _} = Wakesiah.connect(pid, pid)
-    assert Wakesiah.members(pid) == [%Wakesiah.Member{pid: pid, status: :ok}]
+    members = Wakesiah.members(pid)
+    [%Wakesiah.Member{pid: pid, status: :ok}] = members
   end
 
   @tag :distributed
@@ -26,9 +27,8 @@ defmodule WakesiahTest do
     remote_node = Application.get_env(:wakesiah, :test_remote_name)
     assert {:ok, _} = Wakesiah.connect(pid, remote_node)
     assert Wakesiah.members(pid) |> Enum.all?(&remote_node?/1)
-    assert Wakesiah.members({:wakesiah, remote_node}) == [
-      %Wakesiah.Member{pid: pid, status: :ok}
-    ]
+    members = Wakesiah.members({:wakesiah, remote_node})
+    [%Wakesiah.Member{pid: pid, status: :ok}] = members
   end
 
   test "connection timeout", %{pid: pid} do
