@@ -49,7 +49,3 @@ To use release to test:
       RELEASE_MUTABLE_DIR=$PWD/config/test/state \
       ./rel/wakesiah/bin/wakesiah start
     $ elixir --name foo@127.0.0.1 foo -S mix test
-    $ RELEASE_CONFIG_DIR=$PWD/config/test \
-      RELEASE_MUTABLE_DIR=$PWD/config/test/state \
-      ./rel/wakesiah/bin/wakesiah start
-      
