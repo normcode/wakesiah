@@ -3,7 +3,7 @@ defmodule Wakesiah.FailureDetectorTest do
   use ExUnit.Case, async: true
 
   alias Wakesiah.FailureDetector, as: FD
-  alias Wakesiah.FailureDetector.Peer
+  alias Wakesiah.Membership.Peer
 
   setup context do
     {:ok, [name: context.test]}
