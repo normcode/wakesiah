@@ -52,7 +52,7 @@ defmodule Wakesiah.FailureDetector do
   end
 
   def handle_call({:update, peer_id, {event, inc}}, _from, state = %State{}) do
-    peers = Membership.update(state.peers, {event, peer_id, inc})
+    peers = Membership.update(state.peers, peer_id, {event, inc})
     {:reply, :ok, %State{state | peers: peers}}
   end
 
