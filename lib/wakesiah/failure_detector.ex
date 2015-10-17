@@ -3,12 +3,11 @@ defmodule Wakesiah.FailureDetector do
   use GenServer
 
   alias Wakesiah.Membership
-  alias Wakesiah.Membership.Peer
 
   @name __MODULE__
 
   defmodule State do
-    defstruct me: nil, peers: Membership.new, incarnation: 0
+    defstruct [:me, :peers, :incarnation]
   end
 
   def start_link(options \\ [name: @name])
@@ -39,11 +38,6 @@ defmodule Wakesiah.FailureDetector do
   def init(seeds) when is_list(seeds) do
     peers = Membership.new(seeds)
     {:ok, %State{peers: peers, incarnation: 0}}
-  end
-
-  def handle_call({:add_peer, peer_addr}, _from, state) do
-    state = [%Peer{addr: peer_addr}]
-    {:reply, :ok, state}
   end
 
   def handle_call(:members, _from, state = %State{}) do

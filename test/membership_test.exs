@@ -3,12 +3,7 @@ defmodule Wakesiah.MembershipTest do
   use ExUnit.Case, async: true
 
   alias Wakesiah.Membership
-  alias Wakesiah.Membership.Peer
-
-  test "new" do
-    membership = Membership.new
-    assert Enum.empty?(membership)
-  end
+  alias Wakesiah.Peer
 
   def init_membership(peers), do: init_membership(peers, HashDict.new)
   def init_membership([], acc),  do: acc
@@ -26,7 +21,16 @@ defmodule Wakesiah.MembershipTest do
   def assert_peer(membership, peer = %Peer{addr: peer_addr}) do
     assert (membership |> Membership.get(peer_addr)) == peer
   end
+
+  setup do
+    {:ok, [inc: Enum.random 10..100]}
+  end
   
+  test "new" do
+    membership = Membership.new
+    assert Enum.empty?(membership)
+  end
+
   test "members excludes failed peers" do
     membership = init_membership(peer_addr: [status: :failed, incaranation: 0],
                                  alive_addr: [status: :alive, incarnation: 0],
@@ -34,40 +38,40 @@ defmodule Wakesiah.MembershipTest do
     assert_members membership, [:alive_addr, :suspect_addr]
   end
 
-  test "state: :alive, :alive, i > j" do
-    init_membership(peer_addr: [status: :alive]) |>
-      Membership.update(:peer_addr, {:alive, 1}) |>
-      assert_peer %Peer{status: :alive, addr: :peer_addr, incarnation: 1}
+  test "state: :alive, :alive, i > j", %{inc: inc} do
+    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+      Membership.update(:peer_addr, {:alive, inc + 1}) |>
+      assert_peer %Peer{status: :alive, addr: :peer_addr, incarnation: inc + 1}
   end
 
-  test "update :alive, :suspect, i > j" do
-    init_membership(peer_addr: [status: :alive]) |>
-      Membership.update(:peer_addr, {:suspect, 1}) |>
-      assert_peer %Peer{status: :suspect, addr: :peer_addr, incarnation: 1}
+  test "update :alive, :suspect, i > j", %{inc: inc} do
+    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+      Membership.update(:peer_addr, {:suspect, inc + 1}) |>
+      assert_peer %Peer{status: :suspect, addr: :peer_addr, incarnation: inc + 1}
   end
 
-  test "update :alive, :alive, i == j" do
-    init_membership(peer_addr: [status: :alive]) |>
-      Membership.update(:peer_addr, {:alive, 1}) |>
-      assert_peer %Peer{status: :alive, addr: :peer_addr, incarnation: 1}
+  test "update :alive, :alive, i == j", %{inc: inc} do
+    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+      Membership.update(:peer_addr, {:alive, inc + 1}) |>
+      assert_peer %Peer{status: :alive, addr: :peer_addr, incarnation: inc + 1}
   end
 
-  test "update :alive, :suspect, i == j" do
-    init_membership(peer_addr: [status: :alive]) |>
-      Membership.update(:peer_addr, {:suspect, 1}) |>
-      assert_peer %Peer{status: :suspect, addr: :peer_addr, incarnation: 1}
+  test "update :alive, :suspect, i == j", %{inc: inc} do
+    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+      Membership.update(:peer_addr, {:suspect, inc}) |>
+      assert_peer %Peer{status: :suspect, addr: :peer_addr, incarnation: inc}
   end
 
-  test "update :alive, :alive, i < j" do
-    init_membership(peer_addr: [status: :alive, incarnation: 2]) |>
-      Membership.update(:peer_addr, {:alive, 1}) |>
-      assert_peer %Peer{status: :alive, addr: :peer_addr, incarnation: 2}
+  test "update :alive, :alive, i < j", %{inc: inc} do
+    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+      Membership.update(:peer_addr, {:alive, inc - 1}) |>
+      assert_peer %Peer{status: :alive, addr: :peer_addr, incarnation: inc}
   end
 
-  test "update :suspect, :alive, i < j" do
-    init_membership(peer_addr: [status: :suspect, incarnation: 2]) |>
-      Membership.update(:peer_addr, {:suspect, 1}) |>
-      assert_peer %Peer{status: :suspect, addr: :peer_addr, incarnation: 2}
+  test "update :suspect, :alive, i < j", %{inc: inc} do
+    init_membership(peer_addr: [status: :suspect, incarnation: inc]) |>
+      Membership.update(:peer_addr, {:suspect, inc - 1}) |>
+      assert_peer %Peer{status: :suspect, addr: :peer_addr, incarnation: inc}
   end
 
 end

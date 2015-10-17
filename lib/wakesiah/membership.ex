@@ -1,13 +1,15 @@
 defmodule Wakesiah.Membership do
 
-  defmodule Peer do
-    defstruct addr: nil, status: :alive, incarnation: 0, age: 0
-  end
-
+  alias Wakesiah.Peer
+  
   def new(seeds \\ []) do
     Enum.into(seeds, HashDict.new, fn peer_addr ->
-      {peer_addr, %Peer{addr: peer_addr, status: :alive, incarnation: 0}}
+      {peer_addr, init_peer(peer_addr)}
     end)
+  end
+
+  defp init_peer(peer_addr) do
+    %Peer{addr: peer_addr, incarnation: 0, status: :alive}
   end
 
   def from_peers(peers) do
@@ -41,8 +43,6 @@ defmodule Wakesiah.Membership do
     %Peer{peer | incarnation: i}
   end
 
-  defp maybe_update(peer = %Peer{}, {:alive, _}), do: peer
-
   defp maybe_update(peer = %Peer{status: :suspect, incarnation: j}, {:suspect, i})
   when i > j do
     %Peer{peer | incarnation: i}
@@ -53,6 +53,7 @@ defmodule Wakesiah.Membership do
     %Peer{peer | status: :suspect, incarnation: i}
   end
 
+  defp maybe_update(peer = %Peer{}, {:alive, _}), do: peer
   defp maybe_update(peer = %Peer{}, {:suspect, _i}), do: peer
 
 end
