@@ -36,6 +36,9 @@ defmodule Wakesiah do
     end
   end
 
+  def ping(peer_addr) do
+  end
+
   # Server (callbacks)
 
   def init(:ok) do

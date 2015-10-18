@@ -19,7 +19,7 @@ defmodule WakesiahTest do
   test "connecting to a process", %{pid: pid} do
     assert {:ok, _} = Wakesiah.connect(pid, pid)
     members = Wakesiah.members(pid)
-    [%Wakesiah.Member{pid: pid, status: :ok}] = members
+    [%Wakesiah.Member{pid: ^pid, status: :ok}] = members
   end
 
   @tag :distributed
@@ -28,9 +28,10 @@ defmodule WakesiahTest do
     assert {:ok, _} = Wakesiah.connect(pid, remote_node)
     assert Wakesiah.members(pid) |> Enum.all?(&remote_node?/1)
     members = Wakesiah.members({:wakesiah, remote_node})
-    [%Wakesiah.Member{pid: pid, status: :ok}] = members
+    [%Wakesiah.Member{pid: ^pid, status: :ok}] = members
   end
 
+  @tag :skip
   test "connection timeout", %{pid: pid} do
     stub = spawn_link(fn ->
       :timer.sleep(10000)

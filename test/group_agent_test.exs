@@ -26,7 +26,7 @@ defmodule Wakesiah.GroupAgentTest do
     assert [] == Group.members(pgroup, "group_name")
   end
 
-  test "leave a group, defaults to self", %{process_group: pgroup, pid: pid} do
+  test "leave a group, defaults to self", %{process_group: pgroup} do
     :ok = Group.join(pgroup, "group_name", self)
     :ok = Group.leave(pgroup, "group_name")
     assert [] == Group.members(pgroup, "group_name")

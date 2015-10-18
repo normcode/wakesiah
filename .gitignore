@@ -7,3 +7,4 @@ erl_crash.dump
 logs/
 config/test/state
 rel/
+*.beam
