@@ -63,7 +63,7 @@ defmodule Wakesiah.FailureDetector do
   def handle_info(:tick, state = %State{}) do
     wakesiah.ping(:ping)
     timer = :timer.send_after(1_000, :tick)
-    {:noreply, %State{state | time: timer}}
+    {:noreply, %State{state | timer: timer}}
   end
 
 end

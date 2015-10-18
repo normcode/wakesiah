@@ -3,6 +3,7 @@
   "dbg": {:git, "https://github.com/fishcakez/dbg.git", "5458f74c37679c19718b0e1a872d838c1ae20073", []},
   "erlware_commons": {:hex, :erlware_commons, "0.15.0"},
   "exrm": {:hex, :exrm, "0.19.9"},
+  "fsm": {:hex, :fsm, "0.2.0"},
   "getopt": {:hex, :getopt, "0.8.2"},
   "neotoma": {:hex, :neotoma, "1.7.3"},
   "providers": {:hex, :providers, "1.4.1"},

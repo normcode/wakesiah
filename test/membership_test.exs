@@ -8,7 +8,7 @@ defmodule Wakesiah.MembershipTest do
   def init_membership(peers), do: init_membership(peers, HashDict.new)
   def init_membership([], acc),  do: acc
   def init_membership([{peer_addr, attrs} | t], acc) do
-    peer = struct(Peer, Dict.put(attrs, :addr, peer_addr))
+    peer = Peer.new(attrs)
     init_membership(t, HashDict.put(acc, peer_addr, peer))
   end
 
@@ -18,8 +18,9 @@ defmodule Wakesiah.MembershipTest do
       Enum.sort) == peer_addrs
   end
 
-  def assert_peer(membership, peer = %Peer{addr: peer_addr}) do
-    assert (membership |> Membership.get(peer_addr)) == peer
+  def assert_peer(membership, peer_addr, peer) do
+    other_peer = Membership.get(membership, peer_addr)
+    assert other_peer == peer
   end
 
   setup do
@@ -32,46 +33,46 @@ defmodule Wakesiah.MembershipTest do
   end
 
   test "members excludes failed peers" do
-    membership = init_membership(peer_addr: [status: :failed, incaranation: 0],
-                                 alive_addr: [status: :alive, incarnation: 0],
-                                 suspect_addr: [status: :suspect, incarnation: 0])
+    membership = init_membership(peer_addr: [state: :failed, data: 0],
+                                 alive_addr: [state: :alive, data: 0],
+                                 suspect_addr: [state: :suspect, data: 0])
     assert_members membership, [:alive_addr, :suspect_addr]
   end
 
   test "state: :alive, :alive, i > j", %{inc: inc} do
-    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+    init_membership(peer_addr: [state: :alive, data: inc]) |>
       Membership.update(:peer_addr, {:alive, inc + 1}) |>
-      assert_peer %Peer{status: :alive, addr: :peer_addr, incarnation: inc + 1}
+      assert_peer :peer_addr, Peer.new(state: :alive, data: inc + 1)
   end
 
   test "update :alive, :suspect, i > j", %{inc: inc} do
-    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+    init_membership(peer_addr: [state: :alive, data: inc]) |>
       Membership.update(:peer_addr, {:suspect, inc + 1}) |>
-      assert_peer %Peer{status: :suspect, addr: :peer_addr, incarnation: inc + 1}
+      assert_peer :peer_addr, Peer.new(state: :suspect, data: inc + 1)
   end
 
   test "update :alive, :alive, i == j", %{inc: inc} do
-    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+    init_membership(peer_addr: [state: :alive, data: inc]) |>
       Membership.update(:peer_addr, {:alive, inc + 1}) |>
-      assert_peer %Peer{status: :alive, addr: :peer_addr, incarnation: inc + 1}
+      assert_peer :peer_addr, Peer.new(state: :alive, data: inc + 1)
   end
 
   test "update :alive, :suspect, i == j", %{inc: inc} do
-    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+    init_membership(peer_addr: [state: :alive, data: inc]) |>
       Membership.update(:peer_addr, {:suspect, inc}) |>
-      assert_peer %Peer{status: :suspect, addr: :peer_addr, incarnation: inc}
+      assert_peer :peer_addr, Peer.new(state: :suspect, data: inc)
   end
 
   test "update :alive, :alive, i < j", %{inc: inc} do
-    init_membership(peer_addr: [status: :alive, incarnation: inc]) |>
+    init_membership(peer_addr: [state: :alive, data: inc]) |>
       Membership.update(:peer_addr, {:alive, inc - 1}) |>
-      assert_peer %Peer{status: :alive, addr: :peer_addr, incarnation: inc}
+      assert_peer :peer_addr, Peer.new(state: :alive, data: inc)
   end
 
   test "update :suspect, :alive, i < j", %{inc: inc} do
-    init_membership(peer_addr: [status: :suspect, incarnation: inc]) |>
+    init_membership(peer_addr: [state: :suspect, data: inc]) |>
       Membership.update(:peer_addr, {:suspect, inc - 1}) |>
-      assert_peer %Peer{status: :suspect, addr: :peer_addr, incarnation: inc}
+      assert_peer :peer_addr, Peer.new(state: :suspect, data: inc)
   end
 
 end

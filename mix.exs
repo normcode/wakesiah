@@ -26,6 +26,7 @@ defmodule Wakesiah.Mixfile do
     [
       {:dbg, github: "fishcakez/dbg", only: [:dev]},
       {:exrm, "~> 0.19.5"},
+      {:fsm, "~> 0.2.0"},
     ]
   end
 
