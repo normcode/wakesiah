@@ -52,7 +52,7 @@ defmodule Wakesiah.FailureDetector do
   end
 
   def handle_call({:peer, peer_addr}, _from, %State{peers: peers} = state) do
-    peer = Dict.get(peers, peer_addr)
+    peer = Membership.get(peers, peer_addr)
     {:reply, peer, state}
   end
 

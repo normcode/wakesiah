@@ -33,9 +33,9 @@ defmodule Wakesiah.MembershipTest do
   end
 
   test "members excludes failed peers" do
-    membership = init_membership(peer_addr: [state: :failed, data: 0],
-                                 alive_addr: [state: :alive, data: 0],
-                                 suspect_addr: [state: :suspect, data: 0])
+    membership = init_membership(peer_addr: [state: :failed],
+                                 alive_addr: [state: :alive],
+                                 suspect_addr: [state: :suspect])
     assert_members membership, [:alive_addr, :suspect_addr]
   end
 
