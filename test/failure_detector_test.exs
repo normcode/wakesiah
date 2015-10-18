@@ -5,6 +5,7 @@ defmodule Wakesiah.FailureDetectorTest do
   alias Wakesiah.FailureDetector, as: FD
 
   setup context do
+    Test.PingSelf.register_test
     {:ok, [name: context.test]}
   end
 
@@ -40,10 +41,11 @@ defmodule Wakesiah.FailureDetectorTest do
     assert :ok = FD.update(pid, :peer_addr, {:suspect, 22})
   end
 
-  @tag :skip
-  test "timer tick", context do
-    {:ok, pid} = start_detector([seeds: [:peer_addr]], context)
-    assert [:peer_addr] == FD.tick(pid)
+  test "receiver timer", context do
+    Application.put_env(:wakesiah, :wakesiah_mod, Test.PingSelf)
+    {:ok, pid} = start_detector([], context)
+    send(pid, :tick)
+    assert_receive :ping
   end
 
 end

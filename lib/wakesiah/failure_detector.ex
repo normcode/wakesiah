@@ -7,7 +7,7 @@ defmodule Wakesiah.FailureDetector do
   @name __MODULE__
 
   defmodule State do
-    defstruct [:me, :peers, :incarnation]
+    defstruct [:me, :peers, :incarnation, :timer]
   end
 
   def start_link(options \\ [name: @name])
@@ -34,10 +34,11 @@ defmodule Wakesiah.FailureDetector do
   def peer(pid, peer_id) do
     GenServer.call(pid, {:peer, peer_id})
   end
-  
+
   def init(seeds) when is_list(seeds) do
     peers = Membership.new(seeds)
-    {:ok, %State{peers: peers, incarnation: 0}}
+    timer = :timer.send_after(1_000, :tick)
+    {:ok, %State{peers: peers, incarnation: 0, timer: timer}}
   end
 
   def handle_call(:members, _from, state = %State{}) do
@@ -53,6 +54,16 @@ defmodule Wakesiah.FailureDetector do
   def handle_call({:peer, peer_addr}, _from, %State{peers: peers} = state) do
     peer = Dict.get(peers, peer_addr)
     {:reply, peer, state}
+  end
+
+  def wakesiah() do
+    Application.get_env(:wakesiah, :wakesiah_mod, Wakesiah)
+  end
+
+  def handle_info(:tick, state = %State{}) do
+    wakesiah.ping(:ping)
+    timer = :timer.send_after(1_000, :tick)
+    {:noreply, %State{state | time: timer}}
   end
 
 end
