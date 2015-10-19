@@ -13,7 +13,7 @@ The above starts a new Wakesiah server named `Wakesiah`. Mix starts
 the OTP application which registers a process with the name
 `:wakesiah`.
 
-    iex(node1@wakesiah-dev)> Process.whereis :wakesiah |> Process.info
+    iex(node1@wakesiah-dev)> Process.whereis(:wakesiah) |> Process.info
     [registered_name: :wakesiah, current_function: {:gen_server, :loop, 6},
      initial_call: {:proc_lib, :init_p, 5}, status: :waiting, message_queue_len: 0,
      messages: [], links: [#PID<0.91.0>],
@@ -24,14 +24,6 @@ the OTP application which registers a process with the name
      garbage_collection: [min_bin_vheap_size: 46422, min_heap_size: 233,
       fullsweep_after: 65535, minor_gcs: 79], suspending: []]
 
-To connect to a remote wakesiah process:
-
-    $ iex --sname node2 -S mix
-    iex(node2@wakesiah-dev)> Wakesiah.connect :"node1@wakesiah-dev"}
-    {:ok, :connected}
-    iex(node2@wakesiah-dev)> Wakesiah.members :wakesiah
-    [:"node2@wakesiah-dev"]
-    
 To run distributed tests, start background node named `bar` and run
 the tests in a node named `foo`:
 
@@ -41,7 +33,6 @@ the tests in a node named `foo`:
 You can also use a remote shell to connect to the background node:
 
     $ iex --sname baz --remsh bar@wakesiah-dev
-
 
 To use release to test:
 
