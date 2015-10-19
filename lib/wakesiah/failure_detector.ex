@@ -5,20 +5,15 @@ defmodule Wakesiah.FailureDetector do
   alias Wakesiah.Membership
 
   @name __MODULE__
+  @periodic_ping_timeout 1_000
 
   defmodule State do
-    defstruct [:me, :peers, :incarnation, :timer]
+    defstruct [:me, :peers, :incarnation, :timer, :tasks]
   end
 
-  def start_link(options \\ [name: @name])
-  def start_link(options) do
+  def start_link(options \\ [name: @name]) do
     {seeds, options} = Keyword.pop(options, :seeds, [])
     GenServer.start_link(__MODULE__, seeds, options)
-  end
-
-  def add(peer_addr), do: add(@name, peer_addr)
-  def add(pid, peer_addr) do
-    GenServer.call(pid,  {:add_peer, peer_addr})
   end
 
   def members(pid \\ @name) do
@@ -37,8 +32,8 @@ defmodule Wakesiah.FailureDetector do
 
   def init(seeds) when is_list(seeds) do
     peers = Membership.new(seeds)
-    timer = :timer.send_after(1_000, :tick)
-    {:ok, %State{peers: peers, incarnation: 0, timer: timer}}
+    timer = :timer.send_after(@periodic_ping_timeout, :tick)
+    {:ok, %State{peers: peers, incarnation: 0, timer: timer, tasks: []}}
   end
 
   def handle_call(:members, _from, state = %State{}) do
@@ -56,14 +51,34 @@ defmodule Wakesiah.FailureDetector do
     {:reply, peer, state}
   end
 
-  def wakesiah() do
-    Application.get_env(:wakesiah, :wakesiah_mod, Wakesiah)
+  def handle_call({:ping, _i}, _from, state) do
+    {:reply, {:ack, state.incarnation}, state}
   end
 
-  def handle_info(:tick, state = %State{}) do
-    wakesiah.ping(:ping)
-    timer = :timer.send_after(1_000, :tick)
-    {:noreply, %State{state | timer: timer}}
+  def handle_info(:tick, state = %State{incarnation: seq_num}) do
+    if Enum.empty?(state.peers) do
+        timer = :timer.send_after(@periodic_ping_timeout, :tick)
+        {:noreply, %State{state | timer: timer, incarnation: seq_num + 1}}
+    else
+        peer_addr = Membership.random(state.peers)
+        task = tasks.ping(self, peer_addr, seq_num)
+        tasks = [task | state.tasks]
+        timer = :timer.send_after(@periodic_ping_timeout, :tick)
+        {:noreply, %State{state | timer: timer, tasks: tasks, incarnation: seq_num + 1}}
+    end      
+  end
+
+  def handle_info(msg = {ref, _}, state = %State{}) when is_reference(ref) do
+    case Task.find(state.tasks, msg) do
+      {:ack, task} ->
+        {:noreply, %State{state | tasks: List.delete(state.tasks, task)}}
+      nil ->
+        :exit
+    end
+  end
+
+  defp tasks() do
+    Application.get_env(:wakesiah, :task_mod, Wakesiah.Tasks)
   end
 
 end

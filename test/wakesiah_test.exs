@@ -3,44 +3,46 @@ defmodule WakesiahTest do
   use ExUnit.Case, async: true
 
   setup context do
-    {:ok, pid} = Wakesiah.start_link(name: context.test)
+    {:ok, pid} = Wakesiah.Supervisor.start_link(
+      worker_name: context.test,
+      failure_detector: String.to_atom("#{context.test} failure detector"))
 
     on_exit fn ->
       Wakesiah.stop pid
     end
 
-    {:ok, [pid: pid]}
+    {:ok, [pid: context.test]}
   end
 
-  test "membership list is empty on start", %{pid: pid} do
-    assert Wakesiah.members(pid) == []
+  test "members on start", context do
+    assert [] = Wakesiah.members(context.pid)
   end
 
-  test "connecting to a process", %{pid: pid} do
-    assert {:ok, _} = Wakesiah.connect(pid, pid)
-    members = Wakesiah.members(pid)
-    [%Wakesiah.Member{pid: ^pid, status: :ok}] = members
+  test "members with seeding", context do
+    {:ok, _} = Wakesiah.Supervisor.start_link(
+      seeds: [:peer_addr],
+      worker_name: String.to_atom("#{context.line}"),
+      failure_detector: String.to_atom("#{context.line} failure detector"))
+    assert [:peer_addr] = Wakesiah.members(String.to_atom("#{context.line}"))
   end
 
-  @tag :distributed
-  test "connecting to a remote process", %{pid: pid} do
-    remote_node = Application.get_env(:wakesiah, :test_remote_name)
-    assert {:ok, _} = Wakesiah.connect(pid, remote_node)
-    assert Wakesiah.members(pid) |> Enum.all?(&remote_node?/1)
-    members = Wakesiah.members({:wakesiah, remote_node})
-    [%Wakesiah.Member{pid: ^pid, status: :ok}] = members
+  test "ping" do
+    test_pid = self
+    task = Task.async(fn -> Wakesiah.ping(test_pid, 0) end)
+    assert_receive {:"$gen_call", msg, {:ping, 0}}
+    GenServer.reply(msg, :ack)
+    assert :ack = Task.await(task)
   end
 
-  @tag :skip
-  test "connection timeout", %{pid: pid} do
-    stub = spawn_link(fn ->
-      :timer.sleep(10000)
-    end)
-    Logger.debug("Testing connection timeout: #{inspect stub}")
-    assert {:error, :timeout} = Wakesiah.connect(pid, stub)
-    assert Wakesiah.members(pid) == []
+  test "ping timeout" do
+    :pang = Wakesiah.ping(self, 0)
+    assert_receive {:"$gen_call", _, {:ping, 0}}
   end
 
-  def remote_node?(n), do: n != node()
+  test "task" do
+    task = Wakesiah.Tasks.ping(:fd, self, 0)
+    :pang = Task.await(task)
+    assert_receive {:"$gen_call", msg, {:ping, 0}}
+  end
 
 end
