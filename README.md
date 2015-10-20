@@ -10,6 +10,22 @@ If you want to learn with me, I welcome any contribution including
 feedback, questions, issues, documentation, gifs, and code. You're
 always free to email me.
 
+Usage
+-----
+
+From an interactive session, you can start a local Wakesiah node:
+
+    $ iex --sname foo -S mix
+    iex> {:ok, pid} = Wakesiah.start_link()
+
+Join a remote peer:
+
+    $ iex --sname bar -S mix
+    iex> Wakesiah.join({:wakesiah, :"foo@wakesiah-dev"})
+    :ok
+    iex> Wakesiah.members()
+    [{:wakesiah, :"foo@wakesiah-dev"}, {:wakesiah, :"bar@wakesiah-dev"}]
+
 Development
 -----------
 
