@@ -57,15 +57,23 @@ defmodule Wakesiah do
     {:reply, FailureDetector.members(state.failure_detector), state}
   end
 
-  def handle_call({:join, peer_addr}, _from, state) do
-    Logger.debug("Adding #{inspect peer_addr} to membership")
-    {:reply, FailureDetector.update(state.failure_detector, peer_addr, {:alive, 0}), state}
+  def handle_call({:join, peer_addr}, from, state) do
+    Logger.debug("Join #{inspect peer_addr}")
+    GenServer.reply(from, :ok)
+    broadcast_join(peer_addr, state)
+    {:noreply, FailureDetector.update(state.failure_detector, peer_addr, {:alive, 0}), state}
   end
 
   def handle_call(:state, _from, state), do: {:reply, state, state}
 
   def handle_cast(:terminate, state) do
     {:stop, :shutdown, state}
+  end
+
+  def broadcast_join(peer_addr, %__MODULE__{failure_detector: fd}) do
+    for peer <- Enum.into([peer_addr], FailureDetector.members(fd)) do
+      GenServer.cast(peer, {:joined, peer_addr})
+    end
   end
 
 end

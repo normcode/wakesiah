@@ -82,6 +82,12 @@ defmodule Wakesiah.FailureDetector do
     end
   end
 
+  def handle_cast({:joined, peer_addr}, state) do
+    Logger.info("Received cast #{inspect {:joined, peer_addr}}")
+    {:noreply, state}
+  end
+
+
   defp tasks() do
     Application.get_env(:wakesiah, :task_mod, Wakesiah.Tasks)
   end
