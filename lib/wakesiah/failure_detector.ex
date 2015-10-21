@@ -42,7 +42,7 @@ defmodule Wakesiah.FailureDetector do
   end
 
   def handle_call({:update, peer_id, {event, inc}}, _from, state = %State{}) do
-    Logger.debug("Updating #{inspect peer_id} #{inspect {event, inc}} #{inspect state.peers}")
+    Logger.debug("Updating: #{inspect peer_id} #{inspect {event, inc}}")
     peers = Membership.update(state.peers, peer_id, {event, inc})
     Logger.debug("Peers: #{inspect peers}")
     {:reply, :ok, %State{state | peers: peers}}
@@ -58,22 +58,23 @@ defmodule Wakesiah.FailureDetector do
   end
 
   def handle_info(:tick, state = %State{incarnation: seq_num}) do
+    Logger.debug("Handling :tick #{inspect state}")
     if Enum.empty?(state.peers) do
-        timer = :timer.send_after(@periodic_ping_timeout, :tick)
-        {:noreply, %State{state | timer: timer, incarnation: seq_num + 1}}
+      timer = :timer.send_after(@periodic_ping_timeout, :tick)
+      {:noreply, %State{state | timer: timer, incarnation: seq_num + 1}}
     else
-        peer_addr = Membership.random(state.peers)
-        task = tasks.ping(self, peer_addr, seq_num)
-        tasks = [task | state.tasks]
-        timer = :timer.send_after(@periodic_ping_timeout, :tick)
-        {:noreply, %State{state | timer: timer, tasks: tasks, incarnation: seq_num + 1}}
+      peer_addr = Membership.random(state.peers)
+      task = tasks.ping(self, peer_addr, seq_num)
+      tasks = [task | state.tasks]
+      timer = :timer.send_after(@periodic_ping_timeout, :tick)
+      {:noreply, %State{state | timer: timer, tasks: tasks, incarnation: seq_num + 1}}
     end      
   end
 
   def handle_info(msg = {ref, _}, state = %State{}) when is_reference(ref) do
     case Task.find(state.tasks, msg) do
-      {:ok, task} ->
-        Logger.debug("Task #{inspect task} returned: :ok")
+      {resp, task} when resp in [:ack, :ok] -> # XXX
+        Logger.debug("Task #{inspect task} returned: #{inspect resp}")
         {:noreply, %State{state | tasks: List.delete(state.tasks, task)}}
       {:pang, task} ->
         Logger.debug("Task #{inspect task} returned: :pang")
