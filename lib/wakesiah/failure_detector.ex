@@ -1,7 +1,7 @@
 defmodule Wakesiah.FailureDetector do
 
   use GenServer
-
+  require Logger
   alias Wakesiah.Membership
 
   @name __MODULE__
@@ -21,7 +21,7 @@ defmodule Wakesiah.FailureDetector do
   end
 
   def update(peer_id, new_status), do: update(@name, peer_id, new_status)
-  def update(pid, peer_id, new_status) when is_pid(pid) do
+  def update(pid, peer_id, new_status) do
     GenServer.call(pid, {:update, peer_id, new_status})
   end
 
@@ -42,7 +42,9 @@ defmodule Wakesiah.FailureDetector do
   end
 
   def handle_call({:update, peer_id, {event, inc}}, _from, state = %State{}) do
+    Logger.debug("Updating #{inspect peer_id} #{inspect {event, inc}} #{inspect state.peers}")
     peers = Membership.update(state.peers, peer_id, {event, inc})
+    Logger.debug("Peers: #{inspect peers}")
     {:reply, :ok, %State{state | peers: peers}}
   end
 
@@ -70,10 +72,12 @@ defmodule Wakesiah.FailureDetector do
 
   def handle_info(msg = {ref, _}, state = %State{}) when is_reference(ref) do
     case Task.find(state.tasks, msg) do
-      {:ack, task} ->
+      {:ok, task} ->
+        Logger.debug("Task #{inspect task} returned: :ok")
         {:noreply, %State{state | tasks: List.delete(state.tasks, task)}}
-      nil ->
-        :exit
+      {:pang, task} ->
+        Logger.debug("Task #{inspect task} returned: :pang")
+        {:noreply, %State{state | tasks: List.delete(state.tasks, task)}}
     end
   end
 

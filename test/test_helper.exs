@@ -12,10 +12,10 @@ defmodule Test.Tasks do
     pid = Process.whereis(:test_pid)
     Task.async(fn ->
       send(pid, {:ping, fd, peer_addr, seq})
-      :ack
+      :ok
     end)
   end
 
 end
 
-ExUnit.start(exclude: exclude)
+ExUnit.start(capture_log: true, exclude: exclude)

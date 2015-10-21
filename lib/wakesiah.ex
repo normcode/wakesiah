@@ -2,9 +2,9 @@ defmodule Wakesiah do
 
   use GenServer
   require Logger
-
   alias Wakesiah.FailureDetector
 
+  @name :wakesiah
   defstruct [:failure_detector]
 
   # Client
@@ -28,10 +28,22 @@ defmodule Wakesiah do
     try do
       GenServer.call(peer_id, {:ping, seq_num}, 100)
     catch
-      :exit, {:timeout, _} -> :pang
+      :exit, reason -> :pang
     end
   end
 
+  def join(peer_addr), do: join(@name, @name, peer_addr)
+  def join(me_addr, peer_addr), do: join(@name, me_addr, peer_addr)
+  def join(pid, me_addr, peer_addr) do
+    Logger.debug("Sending join request to #{inspect peer_addr}")
+    try do
+      GenServer.call(peer_addr, {:join, {me_addr, node()}}, 1000)
+    catch
+      :exit, reason -> {:error, reason}
+    end
+  end
+
+  def members(), do: members(@name)
   def members(pid), do: GenServer.call(pid, :members)
 
   # Server (callbacks)
@@ -44,6 +56,13 @@ defmodule Wakesiah do
   def handle_call(:members, _from, state) do
     {:reply, FailureDetector.members(state.failure_detector), state}
   end
+
+  def handle_call({:join, peer_addr}, _from, state) do
+    Logger.debug("Adding #{inspect peer_addr} to membership")
+    {:reply, FailureDetector.update(state.failure_detector, peer_addr, {:alive, 0}), state}
+  end
+
+  def handle_call(:state, _from, state), do: {:reply, state, state}
 
   def handle_cast(:terminate, state) do
     {:stop, :shutdown, state}

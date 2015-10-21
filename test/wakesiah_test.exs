@@ -42,7 +42,15 @@ defmodule WakesiahTest do
   test "task" do
     task = Wakesiah.Tasks.ping(:fd, self, 0)
     :pang = Task.await(task)
-    assert_receive {:"$gen_call", msg, {:ping, 0}}
+    assert_receive {:"$gen_call", _, {:ping, 0}}
+  end
+
+  @tag :skip
+  test "join", context do
+    {:ok, peer} = Wakesiah.start_link(name: :"another #{context.test}")
+    assert :ok = Wakesiah.join(context.pid, :"another #{context.test}", {peer, node()})
+    assert Wakesiah.members(context.pid) == []
+    assert Wakesiah.members(String.to_atom("another #{context.test}")) == [{:"another #{context.test}", node()}]
   end
 
 end
