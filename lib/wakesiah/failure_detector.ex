@@ -57,17 +57,17 @@ defmodule Wakesiah.FailureDetector do
     {:reply, {:ack, state.incarnation}, state}
   end
 
-  def handle_info(:tick, state = %State{incarnation: seq_num}) do
+  def handle_info(:tick, state = %State{incarnation: inc}) do
     Logger.debug("Handling :tick #{inspect state}")
     if Enum.empty?(state.peers) do
       timer = :timer.send_after(@periodic_ping_timeout, :tick)
-      {:noreply, %State{state | timer: timer, incarnation: seq_num + 1}}
+      {:noreply, %State{state | timer: timer}}
     else
       peer_addr = Membership.random(state.peers)
-      task = tasks.ping(self, peer_addr, seq_num)
+      task = tasks.ping(self, peer_addr, inc)
       tasks = [task | state.tasks]
       timer = :timer.send_after(@periodic_ping_timeout, :tick)
-      {:noreply, %State{state | timer: timer, tasks: tasks, incarnation: seq_num + 1}}
+      {:noreply, %State{state | timer: timer, tasks: tasks}}
     end      
   end
 

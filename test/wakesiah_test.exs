@@ -3,15 +3,16 @@ defmodule WakesiahTest do
   use ExUnit.Case, async: true
 
   setup context do
+    fd = String.to_atom("#{context.test} failure detector")
     {:ok, pid} = Wakesiah.Supervisor.start_link(
       worker_name: context.test,
-      failure_detector: String.to_atom("#{context.test} failure detector"))
+      failure_detector: fd)
 
     on_exit fn ->
       Wakesiah.stop pid
     end
 
-    {:ok, [pid: context.test]}
+    {:ok, [pid: context.test, failure_detector: fd]}
   end
 
   test "members on start", context do
@@ -39,8 +40,9 @@ defmodule WakesiahTest do
     assert_receive {:"$gen_call", _, {:ping, 0}}
   end
 
-  test "task" do
-    task = Wakesiah.Tasks.ping(:fd, self, 0)
+  @tag :skip
+  test "task", context do
+    task = Wakesiah.Tasks.ping(context.failure_detector, self, 0)
     :pang = Task.await(task)
     assert_receive {:"$gen_call", _, {:ping, 0}}
   end
