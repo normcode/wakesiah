@@ -41,55 +41,55 @@ defmodule Wakesiah.MembershipTest do
 
   test "state: :alive, :alive, i > j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :alive, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :alive, data: inc + 1)
   end
 
   test "update :alive, :suspect, i > j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :alive, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :suspect, data: inc + 1)
   end
 
   test "update :alive, :failed, i > j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :alive, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc + 1)
   end
 
   test "update :alive, :alive, i == j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :alive, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :alive, data: inc + 1)
   end
 
   test "update :alive, :suspect, i == j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :alive, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc})
     assert_peer membership, :peer_addr, Peer.new(state: :suspect, data: inc)
   end
 
   test "update :alive, :failed, i == j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :alive, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :alive, :alive, i < j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :alive, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc - 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc - 1})
     assert_peer membership, :peer_addr, Peer.new(state: :alive, data: inc)
   end
 
   test "update :alive, :suspect, i < j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :alive, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc - 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc - 1})
     assert_peer membership, :peer_addr, Peer.new(state: :alive, data: inc)
   end
 
   test "update :alive, :failed, i < j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :alive, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc - 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc - 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc - 1)
   end
 
@@ -97,55 +97,55 @@ defmodule Wakesiah.MembershipTest do
 
   test "state: :suspect, :alive, i > j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :suspect, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :alive, data: inc + 1)
   end
 
   test "update :suspect, :suspect, i > j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :suspect, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :suspect, data: inc + 1)
   end
 
   test "update :suspect, :failed, i > j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :suspect, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc + 1)
   end
 
   test "update :suspect, :alive, i == j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :suspect, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :alive, data: inc + 1)
   end
 
   test "update :suspect, :suspect, i == j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :suspect, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc})
     assert_peer membership, :peer_addr, Peer.new(state: :suspect, data: inc)
   end
 
   test "update :suspect, :failed, i == j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :suspect, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :suspect, :alive, i < j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :suspect, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc - 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc - 1})
     assert_peer membership, :peer_addr, Peer.new(state: :suspect, data: inc)
   end
 
   test "update :suspect, :suspect, i < j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :suspect, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc - 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc - 1})
     assert_peer membership, :peer_addr, Peer.new(state: :suspect, data: inc)
   end
 
   test "update :suspect, :failed, i < j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :suspect, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc - 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc - 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc - 1)
   end
 
@@ -153,55 +153,55 @@ defmodule Wakesiah.MembershipTest do
 
   test "state: :failed, :alive, i > j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :failed, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :failed, :suspect, i > j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :failed, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :failed, :failed, i > j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :failed, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :failed, :alive, i == j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :failed, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc + 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :failed, :suspect, i == j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :failed, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :failed, :failed, i == j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :failed, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc})
+    assert {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :failed, :alive, i < j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :failed, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc - 1})
+    assert assert {_, membership} = Membership.update(membership, :peer_addr, {:alive, inc - 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :failed, :suspect, i < j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :failed, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc - 1})
+    assert assert {_, membership} = Membership.update(membership, :peer_addr, {:suspect, inc - 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
   test "update :failed, :failed, i < j", %{inc: inc} do
     membership = init_membership(peer_addr: [state: :failed, data: inc])
-    {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc - 1})
+    assert assert {_, membership} = Membership.update(membership, :peer_addr, {:failed, inc - 1})
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
