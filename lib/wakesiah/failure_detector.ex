@@ -43,7 +43,8 @@ defmodule Wakesiah.FailureDetector do
 
   def handle_call({:update, peer_id, {event, inc}}, _from, state = %State{}) do
     Logger.debug("Updating: #{inspect peer_id} #{inspect {event, inc}}")
-    peers = Membership.update(state.peers, peer_id, {event, inc})
+    {gossip, peers} = Membership.update(state.peers, peer_id, {event, inc})
+    Logger.debug("To gossip: #{inspect gossip}")
     Logger.debug("Peers: #{inspect peers}")
     {:reply, :ok, %State{state | peers: peers}}
   end

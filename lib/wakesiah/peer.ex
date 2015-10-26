@@ -10,49 +10,49 @@ defmodule Wakesiah.Peer do
 
   defstate alive do
     defevent alive(i), data: j, when: i > j do
-      next_state(:alive, i)
+      respond([], :alive, i)
     end
 
     defevent alive(_) do
-      next_state(:alive)
+      respond([], :alive)
     end
 
     defevent suspect(i), data: j, when: i >= j do
-      next_state(:suspect, i)
+      respond([], :suspect, i)
     end
 
     defevent suspect(_) do
-      next_state(:alive)
+      respond([], :alive)
     end
 
     defevent confirm(i) do
-      next_state(:failed, i)
+      respond([], :failed, i)
     end
 
   end
 
   defstate suspect do
     defevent alive(i), data: j, when: i > j do
-      next_state(:alive, i)
+      respond([], :alive, i)
     end
 
     defevent suspect(i), data: j, when: i > j do
-      next_state(:suspect, i)
+      respond([], :suspect, i)
     end
 
     defevent confirm(i) do
-      next_state(:failed, i)
+      respond([], :failed, i)
     end
 
     defevent _ do
-      next_state(:suspect)
+      respond([], :suspect)
     end
 
   end
 
   defstate failed do
     defevent _ do
-      next_state(:failed)
+      respond([], :failed)
     end
   end
 

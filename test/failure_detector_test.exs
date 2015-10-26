@@ -39,6 +39,11 @@ defmodule Wakesiah.FailureDetectorTest do
     assert :ok = FD.update(pid, :peer_addr, {:alive, 19})
     assert :ok = FD.update(pid, :peer_addr, {:alive, 21})
     assert :ok = FD.update(pid, :peer_addr, {:suspect, 22})
+    assert :ok = FD.update(pid, :peer_addr, {:suspect, 22})
+    assert :ok = FD.update(pid, :peer_addr, {:failed, 23})
+    assert :ok = FD.update(pid, :peer_addr, {:alive, 24})
+    assert :ok = FD.update(pid, :peer_addr, {:failed, 25})
+    assert :ok = FD.update(pid, :peer_addr, {:suspect, 26})
   end
 
   test "receiver timer", context do

@@ -16,9 +16,12 @@ defmodule Wakesiah.Membership do
 
   def update(membership, peer_addr, {status, inc}) do
     case status do
-      :alive -> HashDict.update(membership, peer_addr, Peer.new(state: :alive, data: inc), &Peer.alive(&1, inc))
-      :suspect -> HashDict.update!(membership, peer_addr, &Peer.suspect(&1, inc))
-      :failed -> HashDict.update!(membership, peer_addr, &Peer.confirm(&1, inc))
+      :alive ->
+        HashDict.get_and_update(membership, peer_addr, &Peer.alive(&1, inc))
+      :suspect ->
+        HashDict.get_and_update(membership, peer_addr, &Peer.suspect(&1, inc))
+      :failed ->
+        HashDict.get_and_update(membership, peer_addr, &Peer.confirm(&1, inc))
     end
   end
 
