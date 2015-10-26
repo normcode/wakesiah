@@ -205,4 +205,22 @@ defmodule Wakesiah.MembershipTest do
     assert_peer membership, :peer_addr, Peer.new(state: :failed, data: inc)
   end
 
+  test "add :alive peer" do
+    membership = init_membership([])
+    assert {:new, membership} = Membership.update(membership, :peer_addr, {:alive, 0})
+    assert_peer membership, :peer_addr, Peer.new(state: :alive, data: 0)
+  end
+
+  test "add :suspect peer" do
+    membership = init_membership([])
+    assert {:new, membership} = Membership.update(membership, :peer_addr, {:suspect, 0})
+    assert_peer membership, :peer_addr, Peer.new(state: :suspect, data: 0)
+  end
+
+  test "add :failed peer" do
+    membership = init_membership([])
+    assert {:new, membership} = Membership.update(membership, :peer_addr, {:failed, 0})
+    assert_peer membership, :peer_addr, Peer.new(state: :failed, data: 0)
+  end
+
 end

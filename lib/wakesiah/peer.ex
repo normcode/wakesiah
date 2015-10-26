@@ -25,7 +25,7 @@ defmodule Wakesiah.Peer do
       respond([], :alive)
     end
 
-    defevent confirm(i) do
+    defevent failed(i) do
       respond([], :failed, i)
     end
 
@@ -40,7 +40,7 @@ defmodule Wakesiah.Peer do
       respond([], :suspect, i)
     end
 
-    defevent confirm(i) do
+    defevent failed(i) do
       respond([], :failed, i)
     end
 

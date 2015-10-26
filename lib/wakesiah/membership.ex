@@ -15,14 +15,8 @@ defmodule Wakesiah.Membership do
   end
 
   def update(membership, peer_addr, {status, inc}) do
-    case status do
-      :alive ->
-        HashDict.get_and_update(membership, peer_addr, &Peer.alive(&1, inc))
-      :suspect ->
-        HashDict.get_and_update(membership, peer_addr, &Peer.suspect(&1, inc))
-      :failed ->
-        HashDict.get_and_update(membership, peer_addr, &Peer.confirm(&1, inc))
-    end
+    HashDict.get_and_update(membership, peer_addr,
+                            &do_get_and_update_peer(&1, status, inc))
   end
 
   def members(membership) do
@@ -41,5 +35,21 @@ defmodule Wakesiah.Membership do
   end
 
   def get(membership, key), do: Dict.get(membership, key)
+
+  defp do_get_and_update_peer(:nil, status, inc) do
+    {:new, Peer.new(state: status, data: inc)}
+  end
+
+  defp do_get_and_update_peer(peer = %Peer{}, :alive, inc) do
+    Peer.alive(peer, inc)
+  end
+
+  defp do_get_and_update_peer(peer = %Peer{}, :suspect, inc) do
+    Peer.suspect(peer, inc)
+  end
+
+  defp do_get_and_update_peer(peer = %Peer{}, :failed, inc) do
+    Peer.failed(peer, inc)
+  end
 
 end
