@@ -5,4 +5,5 @@ config :wakesiah, :test_remote_name, (
   |> String.to_atom()
 )
 
-config :logger, [backends: [:console], level: :error]
+config :logger, :console, format: "$time $metadata[$level] $levelpad $message\n"
+config :logger, [backends: [:console], level: :debug]
