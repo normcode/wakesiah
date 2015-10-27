@@ -4,6 +4,13 @@ defmodule Wakesiah.FailureDetectorTest do
 
   alias Wakesiah.FailureDetector, as: FD
 
+  setup_all do
+    Application.put_env(:wakesiah, :task_mod, Test.Tasks)
+    on_exit fn ->
+      Application.delete_env(:wakesiah, :task_mod)
+    end
+  end
+  
   setup context do
     Test.Tasks.register_test
     {:ok, [name: context.test]}

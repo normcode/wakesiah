@@ -12,8 +12,10 @@ defmodule Wakesiah.FailureDetector do
   end
 
   def start_link(options \\ [name: @name]) do
+    name = Keyword.get(options, :name, @name)
     {seeds, options} = Keyword.pop(options, :seeds, [])
-    GenServer.start_link(__MODULE__, seeds, options)
+    {id, options} = Keyword.pop(options, :id, name)
+    GenServer.start_link(__MODULE__, {id, seeds}, options)
   end
 
   def members(pid \\ @name) do
@@ -30,10 +32,14 @@ defmodule Wakesiah.FailureDetector do
     GenServer.call(pid, {:peer, peer_id})
   end
 
-  def init(seeds) when is_list(seeds) do
+  def init({id, seeds}) when is_list(seeds) do
     peers = Membership.new(seeds)
     timer = :timer.send_after(@periodic_ping_timeout, :tick)
-    {:ok, %State{peers: peers, incarnation: 0, timer: timer, tasks: []}}
+    {:ok, %State{me: id,
+                 peers: peers,
+                 incarnation: 0,
+                 timer: timer,
+                 tasks: []}}
   end
 
   def handle_call(:members, _from, state = %State{}) do
@@ -44,9 +50,18 @@ defmodule Wakesiah.FailureDetector do
   def handle_call({:update, peer_id, {event, inc}}, _from, state = %State{}) do
     Logger.debug("Updating: #{inspect peer_id} #{inspect {event, inc}}")
     {gossip, peers} = Membership.update(state.peers, peer_id, {event, inc})
-    Logger.debug("To gossip: #{inspect gossip}")
-    Logger.debug("Peers: #{inspect peers}")
-    {:reply, :ok, %State{state | peers: peers}}
+    case gossip do
+      [] ->
+        Logger.debug("Peers: #{inspect peers}")
+        {:reply, :ok, %State{state | peers: peers}}
+      :new ->
+        Logger.debug("To gossip: #{inspect gossip}")
+        task = tasks_mod.broadcast(Membership.members(peers),
+                                   state.me,
+                                   {peer_id, event, inc})
+        tasks = [task | state.tasks]
+        {:reply, :ok, %State{state | peers: peers, tasks: tasks}}
+    end
   end
 
   def handle_call({:peer, peer_addr}, _from, %State{peers: peers} = state) do
@@ -65,7 +80,7 @@ defmodule Wakesiah.FailureDetector do
       {:noreply, %State{state | timer: timer}}
     else
       peer_addr = Membership.random(state.peers)
-      task = tasks.ping(self, peer_addr, inc)
+      task = tasks_mod.ping(self, peer_addr, inc)
       tasks = [task | state.tasks]
       timer = :timer.send_after(@periodic_ping_timeout, :tick)
       {:noreply, %State{state | timer: timer, tasks: tasks}}
@@ -84,12 +99,13 @@ defmodule Wakesiah.FailureDetector do
   end
 
   def handle_cast({:joined, peer_addr}, state) do
-    Logger.info("Received cast #{inspect {:joined, peer_addr}}")
-    {:noreply, state}
+    Logger.debug("Received cast #{inspect state.me} #{inspect {:joined, peer_addr}}")
+    {_, peers} = Membership.update(state.peers, peer_addr, {:alive, 0})
+    Logger.debug("#{inspect peers}")
+    {:noreply, %State{state | peers: peers}}
   end
 
-
-  defp tasks() do
+  defp tasks_mod() do
     Application.get_env(:wakesiah, :task_mod, Wakesiah.Tasks)
   end
 

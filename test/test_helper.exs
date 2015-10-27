@@ -16,6 +16,16 @@ defmodule Test.Tasks do
     end)
   end
 
+  def broadcast(peers, me, {peer_addr, event, inc}) do
+    pid = Process.whereis(:test_pid)
+    Task.async(fn ->
+      require Logger
+      Logger.debug("Broadcasting from #{inspect me} #{inspect {peer_addr, event, inc}} to #{inspect peers}")
+      send pid, {:broadcast, [peers, me, {peer_addr, event, inc}]}
+      :ok
+    end)
+  end
+
 end
 
 ExUnit.start(capture_log: true, exclude: exclude)

@@ -36,23 +36,22 @@ defmodule WakesiahTest do
   end
 
   test "ping timeout" do
-    :pang = Wakesiah.ping(self, 0)
+    assert {:timeout, _} = catch_exit(Wakesiah.ping(self, 0))
     assert_receive {:"$gen_call", _, {:ping, 0}}
   end
 
-  @tag :skip
   test "task", context do
     task = Wakesiah.Tasks.ping(context.failure_detector, self, 0)
     :pang = Task.await(task)
     assert_receive {:"$gen_call", _, {:ping, 0}}
   end
 
-  @tag :skip
   test "join", context do
     {:ok, peer} = Wakesiah.start_link(name: :"another #{context.test}")
     assert :ok = Wakesiah.join(context.pid, :"another #{context.test}", {peer, node()})
-    assert Wakesiah.members(context.pid) == []
-    assert Wakesiah.members(String.to_atom("another #{context.test}")) == [{:"another #{context.test}", node()}]
+    assert Wakesiah.members(peer) == [{:"another #{context.test}", node()}]
+    assert Wakesiah.members(context.pid) == [{:"another #{context.test}", node()}]
+    assert_receive {:broadcast, _}
   end
 
 end

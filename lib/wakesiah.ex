@@ -25,17 +25,13 @@ defmodule Wakesiah do
   end
 
   def ping(peer_id, seq_num) do
-    try do
-      GenServer.call(peer_id, {:ping, seq_num}, 100)
-    catch
-      :exit, reason -> :pang
-    end
+    GenServer.call(peer_id, {:ping, seq_num}, 100)
   end
 
   def join(peer_addr), do: join(@name, @name, peer_addr)
   def join(me_addr, peer_addr), do: join(@name, me_addr, peer_addr)
   def join(pid, me_addr, peer_addr) do
-    Logger.debug("Sending join request to #{inspect peer_addr}")
+    Logger.debug("Sending join request #{inspect me_addr} to #{inspect peer_addr}")
     try do
       GenServer.call(peer_addr, {:join, {me_addr, node()}}, 1000)
     catch
@@ -59,9 +55,8 @@ defmodule Wakesiah do
 
   def handle_call({:join, peer_addr}, from, state) do
     Logger.debug("Join #{inspect peer_addr}")
-    GenServer.reply(from, :ok)
-    broadcast_join(peer_addr, state)
-    {:noreply, FailureDetector.update(state.failure_detector, peer_addr, {:alive, 0}), state}
+    FailureDetector.update(state.failure_detector, peer_addr, {:alive, 0})
+    {:reply, :ok, state}
   end
 
   def handle_call(:state, _from, state), do: {:reply, state, state}
