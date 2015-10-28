@@ -62,7 +62,7 @@ You'll find the source code in `/vagrant` on the vm.
 Of course, you can do your development on your own workstation if you
 like. You'll need to install the following dependencies:
 
-- elixir v1.0.0 or later
+- elixir v1.1.0 or later
   [available here](https://www.erlang-solutions.com/downloads/download-elixir)
 - erlang/OTP R17.0 or later
   [available here](https://www.erlang-solutions.com/downloads/download-erlang-otp)
