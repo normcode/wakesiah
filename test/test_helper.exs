@@ -16,15 +16,14 @@ defmodule Test.Tasks do
     end)
   end
 
-  def broadcast(peers, me, {peer_addr, event, inc}) do
+  def ping(fd, peer_addr, seq, gossip) do
     pid = Process.whereis(:test_pid)
     Task.async(fn ->
-      require Logger
-      Logger.debug("Broadcasting from #{inspect me} #{inspect {peer_addr, event, inc}} to #{inspect peers}")
-      send pid, {:broadcast, [peers, me, {peer_addr, event, inc}]}
+      send(pid, {:ping, fd, peer_addr, seq, gossip})
       :ok
     end)
   end
+
 
 end
 

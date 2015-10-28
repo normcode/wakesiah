@@ -3,12 +3,13 @@ defmodule Wakesiah.FailureDetector do
   use GenServer
   require Logger
   alias Wakesiah.Membership
+  alias Wakesiah.Broadcast
 
   @name __MODULE__
   @periodic_ping_timeout 1_000
 
   defmodule State do
-    defstruct [:me, :peers, :incarnation, :timer, :tasks]
+    defstruct [:me, :peers, :incarnation, :timer, :tasks, :broadcast]
   end
 
   def start_link(options \\ [name: @name]) do
@@ -39,7 +40,8 @@ defmodule Wakesiah.FailureDetector do
                  peers: peers,
                  incarnation: 0,
                  timer: timer,
-                 tasks: []}}
+                 tasks: [],
+                 broadcast: Broadcast.new}}
   end
 
   def handle_call(:members, _from, state = %State{}) do
@@ -56,11 +58,8 @@ defmodule Wakesiah.FailureDetector do
         {:reply, :ok, %State{state | peers: peers}}
       :new ->
         Logger.debug("To gossip: #{inspect gossip}")
-        task = tasks_mod.broadcast(Membership.members(peers),
-                                   state.me,
-                                   {peer_id, event, inc})
-        tasks = [task | state.tasks]
-        {:reply, :ok, %State{state | peers: peers, tasks: tasks}}
+        broadcast = Broadcast.push(state.broadcast, {peer_id, event, inc})
+        {:reply, :ok, %State{state | peers: peers, broadcast: broadcast}}
     end
   end
 
@@ -80,10 +79,11 @@ defmodule Wakesiah.FailureDetector do
       {:noreply, %State{state | timer: timer}}
     else
       peer_addr = Membership.random(state.peers)
-      task = tasks_mod.ping(self, peer_addr, inc)
+      {gossip, broadcast} = Broadcast.pop(state.broadcast)
+      task = tasks_mod.ping(self, peer_addr, inc, gossip)
       tasks = [task | state.tasks]
       timer = :timer.send_after(@periodic_ping_timeout, :tick)
-      {:noreply, %State{state | timer: timer, tasks: tasks}}
+      {:noreply, %State{state | timer: timer, tasks: tasks, broadcast: broadcast}}
     end      
   end
 

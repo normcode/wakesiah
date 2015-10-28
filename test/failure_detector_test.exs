@@ -58,7 +58,7 @@ defmodule Wakesiah.FailureDetectorTest do
     {:ok, pid} = start_detector([seeds: [:peer_addr]], context)
     send(pid, :tick)
     :timer.sleep(10)
-    assert_receive {:ping, ^pid, :peer_addr, 0}
+    assert_receive {:ping, ^pid, :peer_addr, 0, []}
   end
 
 end
