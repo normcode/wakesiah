@@ -8,3 +8,4 @@ logs/
 config/test/state
 rel/
 *.beam
+cover/
