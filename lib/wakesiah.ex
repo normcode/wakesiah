@@ -24,8 +24,8 @@ defmodule Wakesiah do
     GenServer.cast(pid, :terminate)
   end
 
-  def ping(peer_id, seq_num) do
-    GenServer.call(peer_id, {:ping, seq_num}, 100)
+  def ping(peer_id, seq_num, gossip) do
+    GenServer.call(peer_id, {:ping, seq_num, gossip}, 100)
   end
 
   def join(peer_addr), do: join(@name, @name, peer_addr)

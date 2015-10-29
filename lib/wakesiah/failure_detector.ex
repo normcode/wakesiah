@@ -52,13 +52,13 @@ defmodule Wakesiah.FailureDetector do
   def handle_call({:update, peer_id, {event, inc}}, _from, state = %State{}) do
     Logger.debug("Updating: #{inspect peer_id} #{inspect {event, inc}}")
     {gossip, peers} = Membership.update(state.peers, peer_id, {event, inc})
+    Logger.debug("Peers: #{inspect peers}")
     case gossip do
       [] ->
-        Logger.debug("Peers: #{inspect peers}")
         {:reply, :ok, %State{state | peers: peers}}
       :new ->
-        Logger.debug("To gossip: #{inspect gossip}")
         broadcast = Broadcast.push(state.broadcast, {peer_id, event, inc})
+        Logger.debug("Broadcast: #{inspect broadcast}")
         {:reply, :ok, %State{state | peers: peers, broadcast: broadcast}}
     end
   end
@@ -68,8 +68,14 @@ defmodule Wakesiah.FailureDetector do
     {:reply, peer, state}
   end
 
-  def handle_call({:ping, _i}, _from, state) do
-    {:reply, {:ack, state.incarnation}, state}
+  def handle_call({:ping, inc, gossip}, _from, state = %State{}) do
+    Logger.debug("Received ping: #{inspect inc}, gossip: #{inspect gossip}")
+    peers = Enum.reduce(gossip, state.peers, fn (v, acc) -> 
+      {peer_addr, event, peer_inc} = v
+      {_gossip, acc} = Membership.update(acc, peer_addr, {event, peer_inc})
+      acc
+    end)
+    {:reply, {:ack, state.incarnation}, %State{state | peers: peers}}
   end
 
   def handle_info(:tick, state = %State{incarnation: inc}) do

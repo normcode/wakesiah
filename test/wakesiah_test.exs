@@ -29,29 +29,31 @@ defmodule WakesiahTest do
 
   test "ping" do
     test_pid = self
-    task = Task.async(fn -> Wakesiah.ping(test_pid, 0) end)
-    assert_receive {:"$gen_call", msg, {:ping, 0}}
+    task = Task.async(fn -> Wakesiah.ping(test_pid, 0, []) end)
+    assert_receive {:"$gen_call", msg, {:ping, 0, []}}
     GenServer.reply(msg, :ack)
     assert :ack = Task.await(task)
   end
 
   test "ping timeout" do
-    assert {:timeout, _} = catch_exit(Wakesiah.ping(self, 0))
-    assert_receive {:"$gen_call", _, {:ping, 0}}
+    assert {:timeout, _} = catch_exit(Wakesiah.ping(self, 0, []))
+    assert_receive {:"$gen_call", _, {:ping, 0, []}}
   end
 
   test "task", context do
-    task = Wakesiah.Tasks.ping(context.failure_detector, self, 0)
+    task = Wakesiah.Tasks.ping(context.failure_detector, self, 0, [])
     :pang = Task.await(task)
-    assert_receive {:"$gen_call", _, {:ping, 0}}
+    assert_receive {:"$gen_call", _, {:ping, 0, []}}
   end
 
   test "join", context do
-    {:ok, peer} = Wakesiah.start_link(name: :"another #{context.test}")
-    assert :ok = Wakesiah.join(context.pid, :"another #{context.test}", {peer, node()})
-    assert Wakesiah.members(peer) == [{:"another #{context.test}", node()}]
-    assert Wakesiah.members(context.pid) == [{:"another #{context.test}", node()}]
-    assert_receive {:broadcast, _}
+    fd_name = :"another #{context.test} failure detector"
+    {:ok, fd} = Wakesiah.FailureDetector.start_link(name: fd_name)
+    {:ok, peer} = Wakesiah.start_link(name: :"another #{context.test}", failure_detector: fd_name)
+    assert :ok = Wakesiah.join(peer, fd_name, {context.pid, node()})
+    :timer.sleep(1_100)
+    assert Wakesiah.members(peer) == [{fd_name, node()}]
+    assert Wakesiah.members(context.pid) == [{fd_name, node()}]
   end
 
 end

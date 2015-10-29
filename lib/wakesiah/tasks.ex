@@ -2,11 +2,11 @@ defmodule Wakesiah.Tasks do
 
   require Logger
 
-  def ping(fd, peer_addr, inc) do
+  def ping(fd, peer_addr, inc, gossip) do
     Task.async(fn ->
-      Logger.debug("Pinging #{inspect fd} #{inspect peer_addr} #{inspect inc}")
+      Logger.debug("Pinging #{inspect fd} #{inspect peer_addr} #{inspect inc} #{inspect gossip}")
       try do
-        case Wakesiah.ping(peer_addr, inc) do
+        case Wakesiah.ping(peer_addr, inc, gossip) do
           response = {:ack, peer_inc} ->
             Logger.debug("Received #{inspect response} from #{inspect peer_addr}")
             Wakesiah.FailureDetector.update(fd, peer_addr, {:alive, peer_inc}) # TODO
