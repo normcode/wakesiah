@@ -31,7 +31,7 @@ defmodule Wakesiah do
   def join(peer_addr), do: join(@name, @name, peer_addr)
   def join(me_addr, peer_addr), do: join(@name, me_addr, peer_addr)
   def join(pid, me_addr, peer_addr) do
-    Logger.debug("Sending join request #{inspect me_addr} to #{inspect peer_addr}")
+    Logger.info("Sending join request #{inspect me_addr} to #{inspect peer_addr}")
     try do
       GenServer.call(peer_addr, {:join, {me_addr, node()}}, 1000)
     catch
