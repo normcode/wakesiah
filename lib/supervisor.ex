@@ -20,7 +20,7 @@ defmodule Wakesiah.Supervisor do
              [[name: worker_name,
                failure_detector: failure_detector]]),
     ]
-    supervise(children, strategy: :one_for_one)
+    supervise(children, strategy: :one_for_all)
   end
 
 end

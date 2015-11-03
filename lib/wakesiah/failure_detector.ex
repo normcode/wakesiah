@@ -64,11 +64,6 @@ defmodule Wakesiah.FailureDetector do
     end
   end
 
-  def handle_call({:peer, peer_addr}, _from, %State{peers: peers} = state) do
-    peer = Membership.get(peers, peer_addr)
-    {:reply, peer, state}
-  end
-
   def handle_call({:ping, inc, gossip}, _from, state = %State{}) do
     Logger.debug("Received ping: #{inspect inc}, gossip: #{inspect gossip}")
     peers = Enum.reduce(gossip, state.peers, fn (v, acc) -> 
@@ -96,11 +91,8 @@ defmodule Wakesiah.FailureDetector do
 
   def handle_info(msg = {ref, _}, state = %State{}) when is_reference(ref) do
     case Task.find(state.tasks, msg) do
-      {resp, task} when resp in [:ack, :ok] -> # XXX
+      {resp, task} ->
         Logger.debug("Task #{inspect task} returned: #{inspect resp}")
-        {:noreply, %State{state | tasks: List.delete(state.tasks, task)}}
-      {:pang, task} ->
-        Logger.debug("Task #{inspect task} returned: :pang")
         {:noreply, %State{state | tasks: List.delete(state.tasks, task)}}
     end
   end
@@ -108,7 +100,6 @@ defmodule Wakesiah.FailureDetector do
   def handle_cast({:joined, peer_addr}, state) do
     Logger.debug("Received cast #{inspect state.me} #{inspect {:joined, peer_addr}}")
     {_, peers} = Membership.update(state.peers, peer_addr, {:alive, 0})
-    Logger.debug("#{inspect peers}")
     {:noreply, %State{state | peers: peers}}
   end
 

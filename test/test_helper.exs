@@ -2,18 +2,10 @@ exclude = [distributed: not Node.alive?]
 
 defmodule Test.Tasks do
 
-  @behaviour Wakesiah.Tasks
+  @behaviour Wakesiah.Ping
 
   def register_test() do
     Process.register(self, :test_pid)
-  end
-
-  def ping(fd, peer_addr, seq) do
-    pid = Process.whereis(:test_pid)
-    Task.async(fn ->
-      send(pid, {:ping, fd, peer_addr, seq})
-      :ok
-    end)
   end
 
   def ping(fd, peer_addr, seq, gossip) do
@@ -23,7 +15,6 @@ defmodule Test.Tasks do
       :ok
     end)
   end
-
 
 end
 

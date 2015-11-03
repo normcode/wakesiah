@@ -5,6 +5,7 @@ defmodule Wakesiah do
   alias Wakesiah.FailureDetector
 
   @name :wakesiah
+
   defstruct [:failure_detector]
 
   # Client
@@ -19,18 +20,21 @@ defmodule Wakesiah do
     GenServer.start_link(__MODULE__, {failure_detector}, opts)
   end
 
-  def stop(), do: stop(:wakesiah)
-  def stop(pid) do
-    GenServer.cast(pid, :terminate)
+  def stop(), do: stop(@name)
+  def stop(name) do
+    GenServer.cast(name, :terminate)
   end
 
-  def ping(peer_id, seq_num, gossip) do
-    GenServer.call(peer_id, {:ping, seq_num, gossip}, 100)
+  def ping(peer_id, incarnation, gossip) do
+    Logger.debug("Pinging peer: #{inspect peer_id}")
+    GenServer.call(peer_id, {:ping, incarnation, gossip}, 100)
   end
 
-  def join(peer_addr), do: join(@name, @name, peer_addr)
-  def join(me_addr, peer_addr), do: join(@name, me_addr, peer_addr)
-  def join(pid, me_addr, peer_addr) do
+  def join(peer_addr) do
+    join(@name, {@name, peer_addr})
+  end
+    
+  def join(me_addr, peer_addr) do
     Logger.info("Sending join request #{inspect me_addr} to #{inspect peer_addr}")
     try do
       GenServer.call(peer_addr, {:join, {me_addr, node()}}, 1000)
@@ -63,12 +67,6 @@ defmodule Wakesiah do
 
   def handle_cast(:terminate, state) do
     {:stop, :shutdown, state}
-  end
-
-  def broadcast_join(peer_addr, %__MODULE__{failure_detector: fd}) do
-    for peer <- Enum.into([peer_addr], FailureDetector.members(fd)) do
-      GenServer.cast(peer, {:joined, peer_addr})
-    end
   end
 
 end

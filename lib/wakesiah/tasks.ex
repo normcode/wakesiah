@@ -1,4 +1,11 @@
+defmodule Wakesiah.Ping do
+  # TODO
+  @callback ping(fd :: pid(), peer_addr :: any(), inc :: any(), gossip :: any()) :: any()
+end
+
 defmodule Wakesiah.Tasks do
+
+  @behaviour Wakesiah.Ping
 
   require Logger
 
@@ -9,7 +16,7 @@ defmodule Wakesiah.Tasks do
         case Wakesiah.ping(peer_addr, inc, gossip) do
           response = {:ack, peer_inc} ->
             Logger.debug("Received #{inspect response} from #{inspect peer_addr}")
-            Wakesiah.FailureDetector.update(fd, peer_addr, {:alive, peer_inc}) # TODO
+            Wakesiah.FailureDetector.update(fd, peer_addr, {:alive, peer_inc}) # TODO ??
         end
       catch
         :exit, _reason ->
@@ -17,14 +24,6 @@ defmodule Wakesiah.Tasks do
           Wakesiah.FailureDetector.update(fd, peer_addr, {:suspect, inc})
           :pang
       end
-    end)
-  end
-
-  def broadcast(members, me, {peer_addr, event, inc}) do
-    Task.async(fn ->
-      # TODO call Wakesiah for disseminating join
-      Logger.debug "broadcasting #{inspect [members, me, {peer_addr, event, inc}]}"
-      :ok
     end)
   end
 

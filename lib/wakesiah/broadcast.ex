@@ -15,7 +15,7 @@ defmodule Wakesiah.Broadcast do
   end
 
   def pop(broadcast) do
-    # TODO handle max gossip size and encoding <_< >_>
+    # TODO handle max gossip size and encoding
     {peek(broadcast), %__MODULE__{}}
   end
 
