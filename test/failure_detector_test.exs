@@ -54,11 +54,22 @@ defmodule Wakesiah.FailureDetectorTest do
   end
 
   test "receiver timer", context do
-    Application.put_env(:wakesiah, :task_mod, Test.Tasks)
     {:ok, pid} = start_detector([seeds: [:peer_addr]], context)
     send(pid, :tick)
     :timer.sleep(10)
     assert_receive {:ping, ^pid, :peer_addr, 0, []}
+  end
+
+  test "another peer joined", context do
+    {:ok, pid} = start_detector([seeds: [:peer_addr]], context)
+    assert :ok == FD.update(pid, :another_peer_addr, {:alive, 0})
+    assert [:another_peer_addr, :peer_addr] == FD.members(pid)
+  end
+
+  test "messages about self", context do
+    {:ok, pid} = start_detector([seeds: [:peer_addr]], context)
+    assert :ok == FD.update(pid, :peer_addr, {:alive, 2})
+    assert [:peer_addr] == FD.members(pid)
   end
 
 end

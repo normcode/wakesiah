@@ -54,13 +54,13 @@ defmodule Wakesiah.FailureDetector do
     {gossip, peers} = Membership.update(state.peers, peer_id, {event, inc})
     Logger.debug("Peers: #{inspect peers}")
     case gossip do
-      [] ->
-        {:reply, :ok, %State{state | peers: peers}}
       :new ->
         Logger.info("Adding peer: #{inspect peer_id}")
         broadcast = Broadcast.push(state.broadcast, {peer_id, event, inc})
         Logger.debug("Broadcast: #{inspect broadcast}")
         {:reply, :ok, %State{state | peers: peers, broadcast: broadcast}}
+      _ ->
+        {:reply, :ok, %State{state | peers: peers}}
     end
   end
 
