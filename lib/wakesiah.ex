@@ -4,19 +4,20 @@ defmodule Wakesiah do
   require Logger
   alias Wakesiah.FailureDetector
 
-  @name :wakesiah
+  @name __MODULE__
+  @default_fd_name Wakesiah.FailureDetector
 
   defstruct [:failure_detector]
 
   # Client
 
   def start(opts \\ []) do
-    {failure_detector, options} = Keyword.pop(opts, :failure_detector, :wakesiah_failure_detector)
+    {failure_detector, opts} = Keyword.pop(opts, :failure_detector, @default_fd_name)
     GenServer.start(__MODULE__, {failure_detector}, opts)
   end
 
   def start_link(opts \\ []) do
-    {failure_detector, options} = Keyword.pop(opts, :failure_detector, :wakesiah_failure_detector)
+    {failure_detector, opts} = Keyword.pop(opts, :failure_detector, @default_fd_name)
     GenServer.start_link(__MODULE__, {failure_detector}, opts)
   end
 
